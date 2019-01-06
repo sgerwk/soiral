@@ -1,0 +1,59 @@
+<?xml version="1.0" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2.6a -->
+<!-- CreationDate: 2019-01-06 21:33:13 -->
+<!-- Magnification: 2.1 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="293pt" height="72pt"
+	viewBox="5208 4848 2319 564">
+<g fill="none">
+<!-- Line -->
+<rect x="6030" y="4950" width="630" height="360"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polygon points=" 6030,5040 5310,5040 5220,5130 5310,5220 6030,5220"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5760,5040 5760,5220"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5490,5040 5490,5220"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5625,5040 5625,5085 6885,5085 6885,4860 7200,4860 7200,5040"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5400,5220 5400,5175 6885,5175 6885,5400 7200,5400 7200,5220"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 7110,5040 7290,5040"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polygon points=" 7200,5040 7110,5220 7290,5220"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp0">
+	<path clip-rule="evenodd" d="M 5208,4848 H 7527 V 5412 H 5208 z
+		M 7397,4980 7440,5023 7525,4905 7515,4895z"/>
+</clipPath>
+</defs>
+<polyline points=" 7335,5085 7515,4905" clip-path="url(#cp0)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 7515,4905 -->
+<polygon points=" 7440,5023 7504,4916 7397,4980 7440,5023"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp1">
+	<path clip-rule="evenodd" d="M 5208,4848 H 7527 V 5412 H 5208 z
+		M 7397,5070 7440,5113 7525,4995 7515,4985z"/>
+</clipPath>
+</defs>
+<polyline points=" 7335,5175 7515,4995" clip-path="url(#cp1)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 7515,4995 -->
+<polygon points=" 7440,5113 7504,5006 7397,5070 7440,5113"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+</g>
+</svg>

@@ -1,0 +1,68 @@
+<?xml version="1.0" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2.6a -->
+<!-- CreationDate: 2019-01-06 21:33:13 -->
+<!-- Magnification: 2.1 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="230pt" height="123pt"
+	viewBox="4805 4170 1822 975">
+<g fill="none">
+<!-- Line -->
+<polyline points=" 6210,4680 6390,4680"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polygon points=" 6300,4680 6210,4860 6390,4860"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5310,4500 5400,4500 5445,4410 5490,4590 5535,4410 5580,4590 5625,4410 5670,4590
+ 5715,4410 5760,4500 6300,4500 6300,4680"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5850,4725 6030,4725"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5850,4815 6030,4815"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5940,4500 5940,4725"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 6300,4860 6300,5040 5310,5040"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5940,4815 5940,5040"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp0">
+	<path clip-rule="evenodd" d="M 4805,4170 H 6627 V 5145 H 4805 z
+		M 6497,4620 6540,4663 6625,4545 6615,4535z"/>
+</clipPath>
+</defs>
+<polyline points=" 6435,4725 6615,4545" clip-path="url(#cp0)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 6615,4545 -->
+<polygon points=" 6540,4663 6604,4556 6497,4620 6540,4663"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp1">
+	<path clip-rule="evenodd" d="M 4805,4170 H 6627 V 5145 H 4805 z
+		M 6497,4710 6540,4753 6625,4635 6615,4625z"/>
+</clipPath>
+</defs>
+<polyline points=" 6435,4815 6615,4635" clip-path="url(#cp1)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 6615,4635 -->
+<polygon points=" 6540,4753 6604,4646 6497,4710 6540,4753"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+<!-- Text -->
+<text xml:space="preserve" x="5220" y="4590" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="end">3.3V</text>
+<!-- Text -->
+<text xml:space="preserve" x="5265" y="5130" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="end">TXD</text>
+<!-- Text -->
+<text xml:space="preserve" x="5580" y="4320" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">100 Ohm</text>
+<!-- Text -->
+<text xml:space="preserve" x="5805" y="4860" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="end">100 uF</text>
+</g>
+</svg>

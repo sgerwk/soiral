@@ -1,0 +1,62 @@
+<?xml version="1.0" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2.6a -->
+<!-- CreationDate: 2019-01-06 21:33:13 -->
+<!-- Magnification: 2.1 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="293pt" height="72pt"
+	viewBox="4983 4218 2319 564">
+<g fill="none">
+<!-- Line -->
+<polygon points=" 5310,4410 5220,4590 5400,4590"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5220,4410 5400,4410"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<rect x="5850" y="4320" width="630" height="360"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polygon points=" 6480,4410 7200,4410 7290,4500 7200,4590 6480,4590"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 6750,4410 6750,4590"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 7020,4410 7020,4590"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5310,4590 5310,4770 5625,4770 5625,4545 6615,4545 6615,4590"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 5310,4410 5310,4230 5625,4230 5625,4455 7110,4455 7110,4410"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<polyline points=" 6885,4455 6885,4410"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp0">
+	<path clip-rule="evenodd" d="M 4983,4218 H 7302 V 4782 H 4983 z
+		M 5100,4337 5057,4380 5175,4465 5185,4455z"/>
+</clipPath>
+</defs>
+<polyline points=" 4995,4275 5175,4455" clip-path="url(#cp0)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 5175,4455 -->
+<polygon points=" 5057,4380 5164,4444 5100,4337 5057,4380"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp1">
+	<path clip-rule="evenodd" d="M 4983,4218 H 7302 V 4782 H 4983 z
+		M 5100,4427 5057,4470 5175,4555 5185,4545z"/>
+</clipPath>
+</defs>
+<polyline points=" 4995,4365 5175,4545" clip-path="url(#cp1)"
+	stroke="#000000" stroke-width="8px"/>
+<!-- Forward arrow to point 5175,4545 -->
+<polygon points=" 5057,4470 5164,4534 5100,4427 5057,4470"
+	stroke="#000000" stroke-width="8px" stroke-miterlimit="8"/>
+</g>
+</svg>
