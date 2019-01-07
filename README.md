@@ -50,7 +50,9 @@ schematics")
 ![serial emitter schematics](images/serial-emitter-schematics.png "serial emitter
 schematics")
 
-![serial emitter breadboard](images/serial-emitter-breadboard.png "serial emitter breadboard")
+![serial emitter breadboard connections](images/serial-emitter-breadboard-connections.png "serial emitter breadboard")
 
-![serial emitter adapter](images/serial-emitter-adapter.png "serial emitter adapter")
+![serial emitter breadboard](images/serial-emitter-breadboard.jpg "serial emitter breadboard")
+
+![serial emitter adapter](images/serial-emitter-adapter.jpg "serial emitter adapter")
 
