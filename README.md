@@ -28,8 +28,8 @@ The following programs use this adapter:
 
 ## Send
 
-Two adapters send remote control signals, one using the sound card and the
-other the serial port. The first is the universal remote control for mobiles
+Two adapters send remote control signals, one through the sound card, the other
+through the serial port. The first is the universal remote control for mobiles
 that is sold for under a Euro on ebay; it is cheap and can be bought
 ready-made, but it may work with the **irblast** program here or not, or only
 at close range, depending on the sound card and the device to be controlled.
