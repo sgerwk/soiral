@@ -1,0 +1,119 @@
+.TH remote 1 "Dec 20, 2018"
+
+.
+.
+.
+.SH NAME
+remote \- read infrared signals from remote controls via an audio adapter
+
+.
+.
+.
+.SH SYNOPSIS
+.TP 7
+.B remote
+[\fI-f\fP] [\fI-c\fP] [\fI-l\fP] [\fI-d n\fP]
+(\fIfile\fP|\fIaudio_device\fP) --
+[\fIamplify_factor\fP [\fItrigger_bound\fP]]
+
+.
+.
+.
+.SH DESCRIPTION
+
+Read codes from an infrared remote control via an adapter connected to the
+microphone input of a sound card. Currently only the NEC, SHARP, SONY20 and
+RC5 protocols are supported.
+
+.
+.
+.
+.SH OPTIONS
+
+.TP
+.B -f
+input is a sequence of numbers in ascii, one per line, instead of an AU file
+.TP
+.B -c
+accept the signals produced by \fBirblast\fP(\fI1\fP) via a loopback audio
+device
+.TP
+.B -l
+log input to file \fIlog.au\fP; the log file is in ascii and is called
+\fIlog.txt\fP if also \fI-f\fP is given
+.TP
+.BI -d " n
+debug protocol \fIn\fP; see \fIPROTOCOLS\fP, below
+.TP
+.B amplify_factor
+-1 to invert, default 1
+.TP
+.B trigger_bound
+the default is to use the background noise canceler, which requires a bit of
+signal absence at the beginning and derives the bound from it
+.TP
+.B file|audio_device
+input is read from file if it exists, otherwise from audio capture
+device audio_device (list available: arecord -L)
+
+.
+.
+.
+.SH DETAILS
+
+The input file is by default an AU file with header, 16 bit signed integer PCM.
+This is also the format of the log file, which is just a copy of the input
+saved to file. If requested by option \fI-f\fP, both are sequences of integers
+in ascii, one per line.
+
+Decoding the input signal requires knowing the approximate level of the noise
+intensity (to be precise, the maximal value that is output by the chain of
+signal filters when no actual signal is present). This level can be determined
+in two ways. The default is to derive it from the initial part of the signal;
+this assumes that no signal is present when the program is started.
+Alternatively, it is passed as the \fItrigger_bound\fP argument; this lifts the
+assumption that no signal is initially present, but requires the value of the
+additional argument. A compromise is to use the default once for a given
+combination of sound card and adapter, take notice of the background bounds and
+then pass their maximal absolute value multiplied by two as the trigger bound.
+
+.
+.
+.
+.SH PROTOCOLS
+
+The numbers of the protocols are as follows. Each protocol is implemented
+twice: once for the direct signal and once for the inverted signal. Also, the
+nec repeat codes are considered a different protocol than the codes for the
+keys.
+
+.TS
+l l
+---
+l l.
+number	protocol
+1	nec
+2	nec, inverted
+3	nec repeat
+4	nec repeat, inverted
+5	nec2
+6	nec2, inverted
+7	nec2 repeat
+8	nec2 repeat, inverted
+9	sharp
+10	sharp, inverted
+11	sony12
+12	sony12, inverted
+13	sony20
+14	sony20, inverted
+15	rc5
+16	rc5, inverted
+.TE
+
+.
+.
+.
+.SH SEE ALSO
+
+\fIlayout\fP(1), \fIsignal2pbm\fP(1)
+
