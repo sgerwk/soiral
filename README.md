@@ -1,13 +1,13 @@
 # SOIRAL
 
-Receive or emit remote control codes throgh an adapter connected to the sound
+Receive or emit remote control codes through an adapter connected to the sound
 card or serial port.
 
 ## Receive
 
-The adapter is a made of a single infrared photodiode connected to the
-microphone jack. It may be soldered or assembled using breakouts. See also
+The adapter is a single infrared photodiode connected to the microphone jack:
 (http://ststefanov.eu/?p=142&lang=en "the infrared receiver page").
+It may be soldered or assembled using breakouts.
 
 ![sound receiver schematics](images/sound-receiver-schematics.png "sound receiver
 schematics")
@@ -16,13 +16,15 @@ schematics")
 
 ![sound receiver breakout](images/sound-receiver-breakout.jpg "sound receiver breakout")
 
+![sound receiver breakout parts](images/sound-receiver-breakout-parts.jpg "sound receiver breakout parts")
+
 The following programs use this adapter:
 
 - **remote** decodes the signals received from a remote control
 
 - **layout** stores all codes a remote control emits in a text file
 
-- **microphone** and **signal2pbm** visualize the raw infrared signals
+- **signal2pbm** visualizes the raw infrared signals
 
 ## Send
 
