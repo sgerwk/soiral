@@ -86,7 +86,7 @@ void usage() {
 	printf("plot a sequence of integers\n");
 	printf("usage:\n");
 	printf("\tsignal2pbm [options] infile [outfile.pbm]\n");
-	printf("\t\t-a\t\tread data in ascii format, rather than au\n");
+	printf("\t\t-f\t\tread data in ascii format, rather than au\n");
 	printf("\t\t-w width\twidth of image (height depends on samples)\n");
 	printf("\t\t-t timeslot\tsamples squeezed in a horizontal pixel\n");
 	printf("\t\t-m maxvalue\tthe maximal value for the samples\n");
