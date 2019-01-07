@@ -1,0 +1,89 @@
+.TH signal2pbm 1 "November 14, 2018"
+
+.
+.
+.
+.SH NAME
+signal2pbm \- plot a sequence of numbers
+
+.
+.
+.
+.SH SYNOPSIS
+.TP
+\fBsignal2pbm\fP [\fIoptions\fP] \fIdatafile\fP [\fIoutfile.pbm\fP]
+
+.
+.
+.
+.SH DESCRIPTION
+Plot a sequence of integers stored sequentially in a file.
+Produce a pbm(5) image file as a result.
+
+.
+.
+.
+.SH OPTIONS
+.TP
+.BI -w " width
+the width of the image, in pixels;
+the height depends on the number of samples
+.TP
+.BI -t " timeslot
+how many samples are drawn in an horizontal pixel;
+all values between the minimal value and maximal value in the slot are drawn,
+not just the values that are actually sampled within the time slot; if
+\fItimeslot\fP is zero or negative, each sample is replicated \fI-timeslot+2\fP
+times
+.TP
+.BI -m " maxvalue
+the maximal value for the signal; by default, it is \fIINT16_MAX\fP, the
+maximal possible value for a signed 16-bit integer; this option can be used to
+expand the signal, like \fI-e\fP; if a value is larger than the maximal value,
+it is drawn cropped
+.TP
+.BI -i " interline
+the output images has the signal drawn in a sequence of lines;
+this amount tells how much pixels each line has below and above;
+the default is 10, meaning that lines are 20 pixels apart
+.TP
+.BI -e " factor
+how much to expand each line; if \fIfactor\fP is more than one (the default),
+the signal is drawn cropped when it would be larger than half the interline; in
+other words, the drawing never invades the lines above and below
+.TP
+.BI -s " threshold
+amounts lower than this are considered null as far as the no-signal line
+squeezing is concerned (see option \fI-n\fP)
+.TP
+.BI -n " height
+flat lines are squeezed to save space; this is their height;
+to suppress squeezing, set \fIheight\fP to be double the interline
+.TP
+.B -j
+without this option, a jump between signal values at consecutive points is
+connected; this option disables this; as a result, the signal line may be shown
+as broken
+.TP
+.B -a
+normally, all points between minimum and maximal level in the timeslot are
+drawn; this option makes the average being drawn instead; this average is
+likely to be uniformly zero
+.TP
+.B -0
+draw the line of signal level 0 in addition to the actual signal level
+.TP
+.B -f
+input is a sequence of numbers in ascii, one per line;
+the default is a 1-channel 16-bit linear PCM AU file with header
+.TP
+.B -v
+run the fbi(1) viewer to show the resulting image; does not work at the end of
+a pipe, since the viewer needs the standard input to come from a console
+.TP
+.B -h
+in-line help
+.TP
+.B outfile.pbm
+output file; \fIoutput.pbm\fP, if omitted
+
