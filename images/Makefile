@@ -11,5 +11,5 @@ all: ${PNG} ${SVG}
 	fig2dev -L svg -m 2 $< $@
 
 clean:
-	rm -f ${PNG} ${SVG}
+	rm -f ${PNG} ${SVG} *.bak
 
