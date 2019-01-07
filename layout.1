@@ -1,0 +1,220 @@
+.TH layout 1 "Dec 8, 2018"
+
+.
+.
+.
+.SH NAME
+layout \- fill a layout of remote control keys with their codes
+
+.
+.
+.
+.SH SYNOPSIS
+.B layout
+[\fI-s\fP] [\fI-c\fP] [\fI-k\fP] [\fI-l\fP [\fI-f\fP]] [\fI-r\fP] \
+\fIlayout.txt\fP [\fIaudiodevice\fP]
+
+.
+.
+.
+.SH DESCRIPTION
+
+Read keys from an infrared diode connected to a microphone jack and write them
+to a text file containing the layout of the keys in the remote. The aim is to
+produce a file that describes the placement of the keys in the remote and their
+codes.
+
+The layout file is a text file with key definitions and arbitrary spaces and
+newlines. Each key definition is either NAME or NAME|CODE. Before calling
+\fIlayout\fP, the user writes the NAMEs of the keys in the remoted in a text
+file \fIlayout.txt\fP, placing them in a way that resembles the physical layout
+of the remote. Calling \fIlayout\fP allows for completing the file by the
+addition of the CODE for each NAME.
+
+A simple remote with just the power, mute, channel and volume keys may haves
+keys places more or less like this:
+
+.nf
+     POWER MUTE
+      CH+  VOL+
+      CH-  VOL-
+.fi
+
+A text file that is exactly like this may be used as a start. This
+\fIlayout.txt\fP file is an approximation of the layout of keys in the remote.
+
+When called on this file, \fIlayout\fP asks for the POWER key; when it receives
+a code from the infrared diode, it adds it to the POWER key, and the layout
+becomes something like:
+
+.nf
+     POWER|nec,0x08,0x0B MUTE
+      CH+  VOL+
+      CH-  VOL-
+.fi
+
+The layout now contains the code for the POWER key. This layout can be saved by
+pressing the 'w' key.
+
+The program then asks for the MUTE key, and so on. Pressing 'n' allows swithing
+to the CH+ key without inserting the MUTE key. Going back is also possible, by
+the 'p' key. Key 'q' saves the layout and terminates; key 'x' terminates
+without saving. Key 'v' shows the current layout with codes.
+
+.
+.
+.
+.SH OPTIONS
+
+.TP
+.B -s
+show the layout and terminate
+.TP
+.B -c
+omit key codes when showing a layout
+(option \fI-s\fP or keystroke '\fIv\fP')
+.TP
+.B -k
+print complete key codes when showing a layout
+(option \fI-s\fP or keystroke '\fIv\fP');
+this is necessary because some remotes emits keys with different addresses, and
+the default way of showing the layout only print the functions and subfunctions
+of the keys
+.TP
+.B -l
+save what comes from the infrared diode to \fIlog.au\fP
+.TP
+.B -f
+with \fI-l\fP, save to an ascii file \fIlog.txt\fP instead
+.TP
+.B -r
+find key names instead of saving: when a key in a remote is pressed, print its
+name if already in the layout file; do not update the layout file
+.TP
+.B -h
+inline help
+.TP
+.B layout.txt
+the layout file, that contains all key names placed more or less as in the
+remote; keys may also contain codes, appended as NAME|CODE
+.TP
+.B audiodevice
+the audio device; if omitted, "\fIdefault\fP";
+other possibilities are "\fIsysdefault\fP",
+"\fIhw:0\fP", "\fIhw:1\fP", "\fIhw:2\fP", etc.
+
+.
+.
+.
+.SH KEYS
+
+The intention is that the program asks for all keys in order, and then
+terminates.
+
+.TP
+.B n
+go to the next key in the layout
+.TP
+.B p
+go to the previous key in the layout
+.TP
+.B v
+show the current layout, with codes inserted so far
+.TP
+.B w
+save the layout to the same file as passed as input
+.TP
+.B x
+quit without saving the changes to the layout file
+.TP
+.B q
+save the layout and quit; this happens automatically when all missing codes
+have been inserted sequentially
+
+.
+.
+.
+.SH DIRECTIONS
+
+The current format of layout, a simple text file with spaces and newlines, is a
+rough and visually unclear representation of the actual position of the keys in
+the remote. A better format would be an SVG file with the picture of the remote
+in the background and a rectangle or oval around each key.
+
+The code of a key could be stored as an attribute of the rectangle or oval. A
+frame would show which key is to be inserted. The initial SVG layout file would
+be more complicated to produce (take a shot of the remote, draw a rectangle or
+oval around each button, write the name of the button), but the result would be
+a better representation of the remote.
+
+.
+.
+.
+.SH HOW TO MAKE THE RECEIVER
+
+The infrared diode is assumed to be connected as a microphone, between ground
+and power/microphone input. If the microphone input is a normal 3.5 jack (as it
+usually is), the diode is connected between its tip and ring connected
+together and sleeve. This receiver originates from this page:
+.I http://ststefanov.eu/?p=142&lang=en
+
+.nf
+         +--------+--+
+         |        |  |   +------------+
+    ->  ---       |  +---| C          |-------+-----+---\\
+ IR ->  / \\       +------| B          |   A   |  B  | C  >
+    ->  ---       +------| A          |-------+-----+---/
+         |        |      +------------+
+         +--------+
+.fi
+
+Making such a receiver requires soldering equipement, but an equivalent device
+can be build without. What is required:
+
+.IP "  * " 4
+stereo jack-to-RCA adapter
+.IP "  * "
+2 RCA breakouts
+.IP "  * "
+infrared diode
+
+.P
+All of them are available online (e.g., ebay) for about $1 each. Connection is
+like this:
+
+.nf
+                                       +---------------+
+                 +-----------------+   |               |
+         +---+ +-|+  RCA breakout  |---|               |
+         |   | | |-       1        |---|               |
+    ->  ---  | | +-----------------+   |  stereo jack  |------------\\ 
+ IR ->  / \\  | | +-----------------+   |    to RCA     |------------/
+    ->  ---  +-+-|+  RCA breakout  |---|               |
+         +-------|-       2        |---|               |
+                 +-----------------+   |               |
+                                       +---------------+
+.fi
+
+These devices are useful for finding out which codes a remote emits, but have
+usually too short a range for a remote-controlled device.
+
+.
+.
+.
+.SH COMPARISON WITH LIRC
+
+This program does not require any setting, other than specifying the sound card
+to use. It requires no kernel module, other than the ones of the sound card.
+Its output also contains the positions of the keys in the remote, not just
+their codes. The names of the keys are written all at the beginning, which
+saves from the switching from the remote to the keyboard and back at each key.
+
+.
+.
+.
+.SH SEE ALSO
+
+\fIremote\fP(1)
+
+
+
