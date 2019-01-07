@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!-- Creator: fig2dev Version 3.2.6a -->
-<!-- CreationDate: 2019-01-06 21:33:13 -->
+<!-- CreationDate: 2019-01-07 08:52:32 -->
 <!-- Magnification: 2.1 -->
 <svg	xmlns="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -66,12 +66,12 @@
 <!-- Text -->
 <text xml:space="preserve" x="8100" y="4050" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">3.3V</text>
 <!-- Text -->
-<text xml:space="preserve" x="6120" y="5355" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">+</text>
-<!-- Text -->
-<text xml:space="preserve" x="5670" y="5355" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">-</text>
-<!-- Text -->
 <text xml:space="preserve" x="6480" y="4770" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">+</text>
 <!-- Text -->
 <text xml:space="preserve" x="5940" y="4770" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">-</text>
+<!-- Text -->
+<text xml:space="preserve" x="5670" y="5355" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">+</text>
+<!-- Text -->
+<text xml:space="preserve" x="6120" y="5355" fill="#000000" font-family="Times" font-style="normal" font-weight="normal" font-size="144" text-anchor="middle">-</text>
 </g>
 </svg>
