@@ -87,3 +87,16 @@ in-line help
 .B outfile.pbm
 output file; \fIoutput.pbm\fP, if omitted
 
+.
+.
+.
+.SH EXAMPLE
+
+Visualize what \fBremote\fP(\fI1\fP) has received:
+
+.nf
+remote -l
+signal2pbm -c log.au
+fbi output.png
+.fi
+
