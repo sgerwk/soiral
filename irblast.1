@@ -17,6 +17,7 @@ irblast \- emit remote infrared codes via sound card
 [\fI-f frequency\fP]
 [\fI-n value\fP]
 [\fI-s duration\fP]
+[\fI-c percentage\fP]
 [\fI-l\fP]
 [\fI-m\fP]
 \fIprotocol device subdevice function\fP
@@ -80,6 +81,12 @@ changed by this option
 to make sure that the sound card is ready to emit the carrier, the program
 starts with 80000 microseconds of silence (carrier off); this option changes
 this duration
+.TP
+.BI -c " percentage
+the duty cycle, from 0 to 100; some values are special: 1 is the minimal duty
+cycle that produces some signal given the sample rate and the period; 99 is the
+maximal non-constant duty cycle; 100 is the unoscillated signal, like \fI-f
+0\fP; the default is 50
 .TP
 .B -l
 set the audio card parameters immediately, but then wait three seconds before

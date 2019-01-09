@@ -44,6 +44,7 @@ int16_t left_odd =    INT16_MAX;
 int16_t right_even =  INT16_MAX;
 int16_t right_odd =  -INT16_MAX;
 
+int dutycycle = 50;
 int markend = 0;
 
 /*
@@ -159,21 +160,26 @@ snd_pcm_t *audio(char *name, unsigned int *rate) {
  */
 void carrier(int value, int duration, int period, int sample,
 		int16_t *buffer, int *pos) {
-	int t;
+	int t, boundary;
+
+	boundary =
+		dutycycle == 1 ?   sample :
+		dutycycle == 99 ?  period - sample :
+		dutycycle == 100 ? period :
+				   period * dutycycle / 100;
+
 	for (t = 0; t < duration; t += sample) {
 		// left channel
 		buffer[(*pos)++] =
 			value == 0 ?
 				hold :
-				t % period < period / 2 ?
-					left_even : left_odd;
+				t % period < boundary ? left_even : left_odd;
 
 		// right channel
 		buffer[(*pos)++] =
 			value == 0 ?
 				hold :
-				t % period < period / 2 ?
-					right_even : right_odd;
+				t % period < boundary ? right_even : right_odd;
 
 		// check overflow
 		if (*pos >= MAXLEN - 10) {
@@ -629,7 +635,8 @@ void usage() {
 	printf("emit remote infrared codes via sound card\n");
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
-	printf("\t        [-n value] [-l] [-s duration]\n");
+	printf("\t        [-n value] [-s duration] [-c dutycycle] [-l]");
+	printf(" [-m]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -637,6 +644,7 @@ void usage() {
 	printf("\t\t-f frequency\toverride protocol frequency\n");
 	printf("\t\t-n value\tcarrier off value\n");
 	printf("\t\t-s duration\tinitial silence time\n");
+	printf("\t\t-c percentage\tduty cycle\n");
 	printf("\t\t-l\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-m\t\tmark the end of the code (for testing)\n");
 	printf("\t\tprotocol\tnec, nec2, rc5, sharp, sony20, test\n");
@@ -663,7 +671,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:lmh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:lmh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -679,6 +687,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 's':
 			silence = atoi(optarg);
+			break;
+		case 'c':
+			dutycycle = atoi(optarg);
 			break;
 		case 'l':
 			delay = 3;
