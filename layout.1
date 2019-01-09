@@ -11,7 +11,7 @@ layout \- fill a layout of remote control keys with their codes
 .
 .SH SYNOPSIS
 .B layout
-[\fI-s\fP] [\fI-c\fP] [\fI-k\fP] [\fI-l\fP [\fI-f\fP]] [\fI-r\fP] \
+[\fI-s\fP] [\fI-c\fP] [\fI-k\fP] [\fI-t\fP] [\fI-l\fP [\fI-f\fP]] [\fI-r\fP] \
 \fIlayout.txt\fP [\fIaudiodevice\fP]
 
 .
@@ -80,6 +80,9 @@ print complete key codes when showing a layout
 this is necessary because some remotes emits keys with different addresses, and
 the default way of showing the layout only print the functions and subfunctions
 of the keys
+.TP
+.B -t
+print all keys in csv, sorted by function
 .TP
 .B -l
 save what comes from the infrared diode to \fIlog.au\fP

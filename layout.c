@@ -382,6 +382,58 @@ void layoutprint(struct layout *layout, int codes, int complete) {
 }
 
 /*
+ * export a layout to csv
+ */
+void layoutcsvprint(struct layout *layout) {
+	int pos, cur;
+	int prev, next;
+	struct key *ks;
+	char *name, *comma;
+	char protocol[100];
+	int16_t subdevice;
+
+	prev = -1;
+
+	while (1) {
+		next = -1;
+		for (pos = 0; pos < layout->num; pos++) {
+			name = layout->namedkey[pos]->name;
+			if (name[0] == '\n' || name[0] == ' ')
+				continue;
+			ks = layout->namedkey[pos]->key;
+			if (ks->function <= prev)
+				continue;
+			if (next == -1 || ks->function < next) {
+				next = ks->function;
+				cur = pos;
+			}
+		}
+		prev = next;
+		if (next == -1)
+			break;
+
+		name = layout->namedkey[cur]->name;
+		if (name[0] == '\n' || name[0] == ' ')
+			continue;
+		comma = strchr(name, ',');
+		if (! comma)
+			printf("%s,", name);
+		else {
+			fwrite(name, 1, comma - name, stdout);
+			putchar(',');
+		}
+		ks = layout->namedkey[cur]->key;
+		protocol[0] = '\0';
+		appendprotocol(protocol, ks->protocol);
+		printf("%s,", protocol);
+		subdevice = ks->subdevice == -1 ?
+			~ks->device & 0xFF : ks->subdevice;
+		printf("%d,%d,%d", ks->device, subdevice, ks->function);
+		printf("\n");
+	}
+}
+
+/*
  * prompt
  */
 void prompt(int pos, struct layout *layout) {
@@ -438,11 +490,12 @@ void movekey(int *pos, struct layout *layout, int direction, int skipknown) {
  */
 void usage() {
 	printf("usage:\n");
-	printf("\tlayout [-s] [-c] [-k] [-l [-f]] [-r] [-h]");
+	printf("\tlayout [-s] [-c] [-k] [-t] [-l [-f]] [-r] [-h]");
 	printf(" layout.txt [soundcard]\n");
 	printf("\t\t-s\t\tshow the layout of keys and terminate\n");
 	printf("\t\t-c\t\tomit codes when showing a layout\n");
 	printf("\t\t-k\t\tprint complete codes when showing a layout\n");
+	printf("\t\t-t\t\tprint layout in csv and terminate\n");
 	printf("\t\t-l\t\tlog input data to log.au\n");
 	printf("\t\t-f\t\twith, -f, log input data to log.txt\n");
 	printf("\t\t-r\t\tfind key names instead of saving them\n");
@@ -456,7 +509,7 @@ void usage() {
  */
 int main(int argc, char *argv[]) {
 	int opt;
-	int showlayout, showcodes, showall;
+	int showlayout, showcodes, showall, showcsv;
 	int ascii, readkeys;
 	char *layoutfile, *infile, *logfile;
 	FILE *layoutfd;
@@ -477,10 +530,11 @@ int main(int argc, char *argv[]) {
 	showlayout = 0;
 	showcodes = 1;
 	showall = 0;
+	showcsv = 0;
 	logfile = NULL;
 	ascii = 0;
 	readkeys = 0;
-	while (-1 != (opt = getopt(argc, argv, "skclfrh")))
+	while (-1 != (opt = getopt(argc, argv, "skctlfrh")))
 		switch (opt) {
 		case 's':
 			showlayout = 1;
@@ -490,6 +544,10 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'c':
 			showcodes = 0;
+			break;
+		case 't':
+			showlayout = 1;
+			showcsv = 1;
 			break;
 		case 'l':
 			logfile = "log.au";
@@ -529,6 +587,10 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	layout = layoutread(layoutfd);
+	if (showcsv) {
+		layoutcsvprint(layout);
+		return 0;
+	}
 	layoutprint(layout, showcodes, showall);
 	if (showlayout)
 		return 0;
