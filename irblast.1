@@ -18,8 +18,9 @@ irblast \- emit remote infrared codes via sound card
 [\fI-n value\fP]
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
+[\fI-m factor\fP]
 [\fI-l\fP]
-[\fI-m\fP]
+[\fI-e\fP]
 \fIprotocol device subdevice function\fP
 [\fItimes\fP
 [\fIrepetitions\fP]]
@@ -88,12 +89,20 @@ cycle that produces some signal given the sample rate and the period; 99 is the
 maximal non-constant duty cycle; 100 is the unoscillated signal, like \fI-f
 0\fP; the default is 50
 .TP
+.BI -m " factor
+scale time by \fIfactor\fP; this is intended for soundcards or devices with
+imprecise clocks; for example: when the factor is one, everything is sent as
+specified by the protocol; when it is two, all durations are doubled; when it
+is an half, all durations are halved; these example factors are for
+illustration only, a factor that makes sense is probably close to one, like
+\fI0.95\fP or \fI1.05\fP
+.TP
 .B -l
 set the audio card parameters immediately, but then wait three seconds before
 emitting the codes; this is for using a loopback audio device, unless setting
 the same audio parameters at both ends of it
 .TP
-.B -m
+.B -e
 mark the end of each code and the end of the initial silence with a short
 negative pulse; this is only useful for testing with a loopback device in
 conjunction with \fI-n 8000\fP, to check that everything is sent correctly
@@ -172,7 +181,7 @@ arecord -D hw:1,0 -f S16_LE -r 44100 -c 2 -t wav result.wav &
 sleep 1
 irblast -d hw:1,1 -r 44100
 killall arecord
-sox result.wav -D -c 1 result.au remix 2
+sox result.wav result.au remix 2
 signal2pbm -i 20 -c result.au ; fbi output.png
 remote -c result.au
 .fi

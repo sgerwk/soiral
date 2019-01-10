@@ -45,6 +45,7 @@ int16_t right_even =  INT16_MAX;
 int16_t right_odd =  -INT16_MAX;
 
 int dutycycle = 50;
+double timefactor = 1.0;
 int markend = 0;
 
 /*
@@ -168,7 +169,7 @@ void carrier(int value, int duration, int period, int sample,
 		dutycycle == 100 ? period :
 				   period * dutycycle / 100;
 
-	for (t = 0; t < duration; t += sample) {
+	for (t = 0; t < duration * timefactor; t += sample) {
 		// left channel
 		buffer[(*pos)++] =
 			value == 0 ?
@@ -635,8 +636,8 @@ void usage() {
 	printf("emit remote infrared codes via sound card\n");
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
-	printf("\t        [-n value] [-s duration] [-c dutycycle] [-l]");
-	printf(" [-m]\n");
+	printf("\t        [-n value] [-s duration] [-c dutycycle]");
+	printf(" [-m factor] [-l] [-e]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -645,8 +646,9 @@ void usage() {
 	printf("\t\t-n value\tcarrier off value\n");
 	printf("\t\t-s duration\tinitial silence time\n");
 	printf("\t\t-c percentage\tduty cycle\n");
+	printf("\t\t-m factor\ttime scaling\n");
 	printf("\t\t-l\t\tstart with a 3-seconds pause (for loopback)\n");
-	printf("\t\t-m\t\tmark the end of the code (for testing)\n");
+	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
 	printf("\t\tprotocol\tnec, nec2, rc5, sharp, sony20, test\n");
 	printf("\t\tdevice\t\taddress of device, e.g., $((0x12))\n");
 	printf("\t\tsubdevice\tsecond part of address, or \"none\"\n");
@@ -671,7 +673,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:lmh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:m:leh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -691,10 +693,13 @@ int main(int argc, char *argv[]) {
 		case 'c':
 			dutycycle = atoi(optarg);
 			break;
+		case 'm':
+			timefactor = atof(optarg);
+			break;
 		case 'l':
 			delay = 3;
 			break;
-		case 'm':
+		case 'e':
 			markend = 20;
 			break;
 		case 'h':
