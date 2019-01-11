@@ -719,7 +719,7 @@ int main(int argc, char *argv[]) {
 	enum protocol protocol;
 	int device, subdevice, nosubdevice, function;
 	int times = 1, rtimes = 0;
-	unsigned int frequency, rate, period, sample;
+	unsigned int frequency, divisor, rate, period, sample;
 	int i, res;
 
 				/* arguments */
@@ -810,68 +810,75 @@ int main(int argc, char *argv[]) {
 			device, subdevice, function);
 	printf("times: %d rtimes: %d\n", times, rtimes);
 
-				/* open sound card */
+				/* open audio, determine sample rate */
 
-	switch (protocol) {
-	case protocol_nec:
-		frequency = nec_frequency;
-		break;
-	case protocol_nec2:
-		frequency = nec2_frequency;
-		break;
-	case protocol_sharp:
-		frequency = sharp_frequency;
-		break;
-	case protocol_rc5:
-		frequency = rc5_frequency;
-		break;
-	case protocol_sony12:
-	case protocol_sony15:
-	case protocol_sony20:
-		frequency = sony_frequency;
-		break;
-	case protocol_hold:
-		frequency = hold_frequency;
-		break;
-	case protocol_test:
-		frequency = test_frequency;
-		break;
-	case protocol_none:
-		frequency = none_frequency;
-		break;
-	}
+	rate = optrate > 0 ? optrate : 2000000;
+	handle = audio(outdevice, &rate);
+	if (handle == NULL)
+		exit(EXIT_FAILURE);
+	sample = 1000000 / rate;
 
-	if (optfrequency == 0) {
+				/* carrier frequency */
+
+	if (optfrequency > 0)
+		frequency = optfrequency;
+	else if (optfrequency == 0) {
 		left_even = -INT16_MAX;
 		left_odd =  -INT16_MAX;
 		right_even = INT16_MAX;
 		right_odd =  INT16_MAX;
-		rate = frequency * 2 / 3;
-		frequency = 0;
+		frequency = rate / 2;
 	}
-	else if (optfrequency != -1) {
-		frequency = optfrequency;
-		period = 1000000 / optfrequency;
-		rate = optfrequency * 2;
+	else
+		switch (protocol) {
+		case protocol_nec:
+			frequency = nec_frequency;
+			break;
+		case protocol_nec2:
+			frequency = nec2_frequency;
+			break;
+		case protocol_sharp:
+			frequency = sharp_frequency;
+			break;
+		case protocol_rc5:
+			frequency = rc5_frequency;
+			break;
+		case protocol_sony12:
+		case protocol_sony15:
+		case protocol_sony20:
+			frequency = sony_frequency;
+			break;
+		case protocol_hold:
+			frequency = hold_frequency;
+			break;
+		case protocol_test:
+			frequency = test_frequency;
+			break;
+		case protocol_none:
+			frequency = none_frequency;
+			break;
+		}
+
+	// if the frequency is close enough to rate/2, aim at that
+	// otherwise, use the frequency properties of square waves
+	for (divisor = 1;
+	     frequency / divisor * 2 > rate * 1.2;
+	     divisor += 2) {
 	}
-	else {
-		period = 1000000 / (frequency / 3);
-		rate = frequency * 2 / 3;
-	}
+	printf("divisor: %d\n", divisor);
+	frequency /= divisor;
+	if (frequency * 2 > rate)
+		frequency = rate / 2;
+	period = 1000000 / frequency;
 
-	if (optrate > 0)
-		rate = optrate;
-
-	handle = audio(outdevice, &rate);
-	if (handle == NULL)
-		exit(EXIT_FAILURE);
-
-	sample = 1000000 / rate;
+				/* print parameters */
 
 	printf("sample rate: %d samples per second\n", rate);
 	printf("sample duration: %d microseconds\n", sample);
 	printf("carrier frequency: %d Hertz\n", 1000000 / period);
 	printf("carrier period: %d microseconds\n", period);
+
+				/* wait, if -l is passed */
 
 	sleep(delay);
 
