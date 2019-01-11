@@ -46,7 +46,15 @@ int16_t right_odd =  -INT16_MAX;
 
 int dutycycle = 50;
 double timefactor = 1.0;
+int timebalancing = 1;
 int markend = 0;
+
+/*
+ * timing statistics
+ */
+int minovertime;
+int maxovertime;
+int debugtiming = 0;
 
 /*
  * protocols
@@ -158,18 +166,24 @@ snd_pcm_t *audio(char *name, unsigned int *rate) {
  * realized by 0 on both channels, but this would make the signal average
  * greater than zero, and this dc component would be progressively filtered
  * out, with a consequent decrease of power
+ *
+ * variable overtime keeps track of how long the last sample took over the
+ * requested duration
  */
-void carrier(int value, int duration, int period, int sample,
+void carrier(int value, int duration, int *overtime,
+		int period, int sample,
 		int16_t *buffer, int *pos) {
-	int t, boundary;
+	int t, target, boundary, start, o;
 
+	start = *overtime;
+	target = duration * timefactor - sample / 2;
 	boundary =
 		dutycycle == 1 ?   sample :
 		dutycycle == 99 ?  period - sample :
 		dutycycle == 100 ? period :
 				   period * dutycycle / 100;
 
-	for (t = 0; t < duration * timefactor; t += sample) {
+	for (t = *overtime; t < target; t += sample) {
 		// left channel
 		buffer[(*pos)++] =
 			value == 0 ?
@@ -187,6 +201,22 @@ void carrier(int value, int duration, int period, int sample,
 			printf("buffer overflow, ignored carrier switch\n");
 			return;
 		}
+	}
+
+	o = t - duration * timefactor;
+	if (o < minovertime)
+		minovertime = o;
+	if (o > maxovertime)
+		maxovertime = o;
+
+	if (timebalancing)
+		*overtime = o;
+
+	if (debugtiming) {
+		printf("start: %-4d ", start);
+		printf("target: %-6d ", (int) (duration * timefactor));
+		printf("produced: %-6d ", t - start);
+		printf("overtime: %-4d\n", o);
 	}
 }
 
@@ -213,6 +243,7 @@ int necxcode(int subprot, int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
 	uint32_t encoding;
 	int pos;
+	int overtime;
 	int i, bit;
 
 	encoding = 0;
@@ -222,18 +253,20 @@ int necxcode(int subprot, int device, int subdevice, int function,
 	encoding |= (device & 0xFF) << 0;
 
 	pos = 0;
+	overtime = 0;
 
-	carrier(1, subprot == 2 ? 4500 : 9000, period, sample, buffer, &pos);
-	carrier(0, 4500, period, sample, buffer, &pos);
+	carrier(1, subprot == 2 ? 4500 : 9000, &overtime,
+		period, sample, buffer, &pos);
+	carrier(0, 4500, &overtime, period, sample, buffer, &pos);
 
 	for (i = 0; i < 32; i++) {
-		carrier(1, 560, period, sample, buffer, &pos);
+		carrier(1, 560, &overtime, period, sample, buffer, &pos);
 		bit = (encoding & (1 << i)) ? 1680 : 560;
-		carrier(0, bit, period, sample, buffer, &pos);
+		carrier(0, bit, &overtime, period, sample, buffer, &pos);
 	}
 
-	carrier(1, 560, period, sample, buffer, &pos);
-	carrier(0, 110000 - pos / 2, period, sample, buffer, &pos);
+	carrier(1, 560, &overtime, period, sample, buffer, &pos);
+	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -251,17 +284,20 @@ int nec2_code(int device, int subdevice, uint32_t function,
 int necxrepeat(int subprot, int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
 	int pos;
+	int overtime;
 
 	(void) device;
 	(void) subdevice;
 	(void) function;
 
 	pos = 0;
+	overtime = 0;
 
-	carrier(1, subprot == 2 ? 4500 : 9000, period, sample, buffer, &pos);
-	carrier(0, 4500 / 2, period, sample, buffer, &pos);
-	carrier(1, 560, period, sample, buffer, &pos);
-	carrier(0, 110000 - pos / 2, period, sample, buffer, &pos);
+	carrier(1, subprot == 2 ? 4500 : 9000, &overtime,
+		period, sample, buffer, &pos);
+	carrier(0, 4500 / 2, &overtime, period, sample, buffer, &pos);
+	carrier(1, 560, &overtime, period, sample, buffer, &pos);
+	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -292,47 +328,48 @@ int sharp_frequency = 38000;
 
 int sharp_code(int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
-	int i, pos, bit;
+	int i, pos, bit, overtime;
 
 	(void) subdevice;
 
 	pos = 0;
+	overtime = 0;
 
 	for (i = 0; i < 5; i++) {
-		carrier(1, 320, period, sample, buffer, &pos);
+		carrier(1, 320, &overtime, period, sample, buffer, &pos);
 		bit = (device & (1 << i)) ? 1680 : 680;
-		carrier(0, bit, period, sample, buffer, &pos);
+		carrier(0, bit, &overtime, period, sample, buffer, &pos);
 	}
 	for (i = 0; i < 8; i++) {
-		carrier(1, 320, period, sample, buffer, &pos);
+		carrier(1, 320, &overtime, period, sample, buffer, &pos);
 		bit = (function & (1 << i)) ? 1680 : 680;
-		carrier(0, bit, period, sample, buffer, &pos);
+		carrier(0, bit, &overtime, period, sample, buffer, &pos);
 	}
-	carrier(1, 320, period, sample, buffer, &pos);
-	carrier(0, 1680, period, sample, buffer, &pos);
-	carrier(1, 320, period, sample, buffer, &pos);
-	carrier(0, 680, period, sample, buffer, &pos);
-	carrier(1, 320, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
+	carrier(0, 1680, &overtime, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
+	carrier(0, 680, &overtime, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
 
-	carrier(0, 40000, period, sample, buffer, &pos);
+	carrier(0, 40000, &overtime, period, sample, buffer, &pos);
 
 	for (i = 0; i < 5; i++) {
-		carrier(1, 320, period, sample, buffer, &pos);
+		carrier(1, 320, &overtime, period, sample, buffer, &pos);
 		bit = (device & (1 << i)) ? 1680 : 680;
-		carrier(0, bit, period, sample, buffer, &pos);
+		carrier(0, bit, &overtime, period, sample, buffer, &pos);
 	}
 	for (i = 0; i < 8; i++) {
-		carrier(1, 320, period, sample, buffer, &pos);
+		carrier(1, 320, &overtime, period, sample, buffer, &pos);
 		bit = (~function & (1 << i)) ? 1680 : 680;
-		carrier(0, bit, period, sample, buffer, &pos);
+		carrier(0, bit, &overtime, period, sample, buffer, &pos);
 	}
-	carrier(1, 320, period, sample, buffer, &pos);
-	carrier(0, 680, period, sample, buffer, &pos);
-	carrier(1, 320, period, sample, buffer, &pos);
-	carrier(0, 1680, period, sample, buffer, &pos);
-	carrier(1, 320, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
+	carrier(0, 680, &overtime, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
+	carrier(0, 1680, &overtime, period, sample, buffer, &pos);
+	carrier(1, 320, &overtime, period, sample, buffer, &pos);
 
-	carrier(0, 40000, period, sample, buffer, &pos);
+	carrier(0, 40000, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -357,32 +394,33 @@ int sony_frequency = 40000;
 
 int sony_code(int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
-	int i, pos, bit;
+	int i, pos, bit, overtime;
 
 	pos = 0;
+	overtime = 0;
 
-	carrier(1, 2400, period, sample, buffer, &pos);
-	carrier(0, 600, period, sample, buffer, &pos);
+	carrier(1, 2400, &overtime, period, sample, buffer, &pos);
+	carrier(0, 600, &overtime, period, sample, buffer, &pos);
 
 	for (i = 0; i < 7; i++) {
 		bit = (function & (1 << i)) ? 1200 : 600;
-		carrier(1, bit, period, sample, buffer, &pos);
-		carrier(0, 600, period, sample, buffer, &pos);
+		carrier(1, bit, &overtime, period, sample, buffer, &pos);
+		carrier(0, 600, &overtime, period, sample, buffer, &pos);
 	}
 
 	for (i = 0; i < 5; i++) {
 		bit = (device & (1 << i)) ? 1200 : 600;
-		carrier(1, bit, period, sample, buffer, &pos);
-		carrier(0, 600, period, sample, buffer, &pos);
+		carrier(1, bit, &overtime, period, sample, buffer, &pos);
+		carrier(0, 600, &overtime, period, sample, buffer, &pos);
 	}
 
 	for (i = 0; i < 8; i++) {
 		bit = (subdevice & (1 << i)) ? 1200 : 600;
-		carrier(1, bit, period, sample, buffer, &pos);
-		carrier(0, 600, period, sample, buffer, &pos);
+		carrier(1, bit, &overtime, period, sample, buffer, &pos);
+		carrier(0, 600, &overtime, period, sample, buffer, &pos);
 	}
 
-	carrier(0, 14000 - pos / 2, period, sample, buffer, &pos);
+	carrier(0, 14000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -411,35 +449,38 @@ int rc5_toggle = 0;
 
 int rc5_code(int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
-	int i, pos;
+	int i, pos, overtime;
 
 	(void) subdevice;
 
 	pos = 0;
+	overtime = 0;
 
-	carrier(0, 889, period, sample, buffer, &pos);
-	carrier(1, 889, period, sample, buffer, &pos);
-	carrier(0, 889, period, sample, buffer, &pos);
-	carrier(1, 889, period, sample, buffer, &pos);
-	carrier(rc5_toggle ? 0 : 1, 889, period, sample, buffer, &pos);
-	carrier(rc5_toggle ? 1 : 0, 889, period, sample, buffer, &pos);
+	carrier(0, 889, &overtime, period, sample, buffer, &pos);
+	carrier(1, 889, &overtime, period, sample, buffer, &pos);
+	carrier(0, 889, &overtime, period, sample, buffer, &pos);
+	carrier(1, 889, &overtime, period, sample, buffer, &pos);
+	carrier(rc5_toggle ? 0 : 1, 889, &overtime,
+		period, sample, buffer, &pos);
+	carrier(rc5_toggle ? 1 : 0, 889, &overtime,
+		period, sample, buffer, &pos);
 	rc5_toggle = 1 - rc5_toggle;
 
 	for (i = 4; i >= 0; i--) {
-		carrier((device & (1 << i)) ? 0 : 1, 889,
+		carrier((device & (1 << i)) ? 0 : 1, 889, &overtime,
 			period, sample, buffer, &pos);
-		carrier((device & (1 << i)) ? 1 : 0, 889,
+		carrier((device & (1 << i)) ? 1 : 0, 889, &overtime,
 			period, sample, buffer, &pos);
 	}
 
 	for (i = 5; i >= 0; i--) {
-		carrier((function & (1 << i)) ? 0 : 1, 889,
+		carrier((function & (1 << i)) ? 0 : 1, 889, &overtime,
 			period, sample, buffer, &pos);
-		carrier((function & (1 << i)) ? 1 : 0, 889,
+		carrier((function & (1 << i)) ? 1 : 0, 889, &overtime,
 			period, sample, buffer, &pos);
 	}
 
-	carrier(0, 114000 - pos / 2, period, sample, buffer, &pos);
+	carrier(0, 114000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -456,10 +497,11 @@ int rc5_repeat(int device, int subdevice, int function,
 int hold_frequency = -1;
 int hold_code(int device, int subdevice, int function,
 		int period, int sample, int16_t buffer[MAXLEN]) {
-	int pos;
+	int pos, overtime;
 	(void) subdevice;
 	pos = 0;
-	carrier(function, device, period, sample, buffer, &pos);
+	overtime = 0;
+	carrier(function, device, &overtime, period, sample, buffer, &pos);
 	return pos / 2;
 }
 int hold_repeat(int device, int subdevice, int function,
@@ -477,47 +519,50 @@ int test_frequency = 38000;
 
 int test_code(int device, int subdevice, int function,
 		int period, int rate, int16_t buffer[MAXLEN]) {
-	int i, pos;
+	int i, t, pos, overtime;
 
 	(void) subdevice;
 
 	pos = 0;
+	overtime = 0;
 
-	carrier(0, 400, period, rate, buffer, &pos);
+	carrier(0, 400, &overtime, period, rate, buffer, &pos);
 
 	switch (device) {
 	case 0:
-		carrier(0, 10 * function, period, rate, buffer, &pos);
+		t = 10 * function;
+		carrier(0, t, &overtime, period, rate, buffer, &pos);
 		printf("_%d_ ", pos);
-		carrier(1, 10 * function, period, rate, buffer, &pos);
+		carrier(1, t, &overtime, period, rate, buffer, &pos);
 		printf("^%d^ ", pos);
-		carrier(0, 10 * function, period, rate, buffer, &pos);
+		carrier(0, t, &overtime, period, rate, buffer, &pos);
 		printf("_%d_ ", pos);
-		carrier(1, 10 * function, period, rate, buffer, &pos);
+		carrier(1, t, &overtime, period, rate, buffer, &pos);
 		printf("^%d^ ", pos);
-		carrier(0, 10 * function, period, rate, buffer, &pos);
+		carrier(0, t, &overtime, period, rate, buffer, &pos);
 		printf("_%d_ ", pos);
 		break;
 	case 1:
 		for (i = 0; i < 40; i++) {
-			carrier(1, function, period, rate, buffer, &pos);
+			t = function;
+			carrier(1, t, &overtime, period, rate, buffer, &pos);
 			printf("^%d^ ", pos);
-			carrier(0, function, period, rate, buffer, &pos);
+			carrier(0, t, &overtime, period, rate, buffer, &pos);
 			printf("_%d_ ", pos);
 		}
-		carrier(0, 400, period, rate, buffer, &pos);
-		carrier(1, 800, period, rate, buffer, &pos);
-		carrier(0, 400, period, rate, buffer, &pos);
-		carrier(1, 800, period, rate, buffer, &pos);
-		carrier(0, 400, period, rate, buffer, &pos);
-		carrier(1, 800, period, rate, buffer, &pos);
-		carrier(0, 400, period, rate, buffer, &pos);
+		carrier(0, 400, &overtime, period, rate, buffer, &pos);
+		carrier(1, 800, &overtime, period, rate, buffer, &pos);
+		carrier(0, 400, &overtime, period, rate, buffer, &pos);
+		carrier(1, 800, &overtime, period, rate, buffer, &pos);
+		carrier(0, 400, &overtime, period, rate, buffer, &pos);
+		carrier(1, 800, &overtime, period, rate, buffer, &pos);
+		carrier(0, 400, &overtime, period, rate, buffer, &pos);
 		break;
 	}
 
 	printf("\n");
 
-	carrier(0, 1000, period, rate, buffer, &pos);
+	carrier(0, 1000, &overtime, period, rate, buffer, &pos);
 
 	return pos / 2;
 }
@@ -555,6 +600,9 @@ int sendcode(snd_pcm_t *handle,
 		int device, int subdevice, int function, int repeat) {
 	int res, len;
 	int16_t buffer[MAXLEN];
+
+	minovertime = 1000;
+	maxovertime = -1000;
 
 	if (markend > 0)
 		memset(buffer, -64, MAXLEN * sizeof(int16_t));
@@ -614,6 +662,7 @@ int sendcode(snd_pcm_t *handle,
 	case protocol_none:
 		return -1;
 	}
+	printf("%d <= overtime <= %d\n", minovertime, maxovertime);
 	if (len <= 0)
 		return len;
 	printf("audio frames: %d\n", len);
@@ -637,7 +686,8 @@ void usage() {
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
-	printf(" [-m factor] [-l] [-e]\n");
+	printf(" [-m factor] [-b]\n");
+	printf("\t        [-p] [-l] [-e]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -647,6 +697,7 @@ void usage() {
 	printf("\t\t-s duration\tinitial silence time\n");
 	printf("\t\t-c percentage\tduty cycle\n");
 	printf("\t\t-m factor\ttime scaling\n");
+	printf("\t\t-b\t\tdisable time quantization error balancing\n");
 	printf("\t\t-l\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
 	printf("\t\tprotocol\tnec, nec2, rc5, sharp, sony20, test\n");
@@ -673,7 +724,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:m:leh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:m:bleh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -695,6 +746,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'm':
 			timefactor = atof(optarg);
+			break;
+		case 'b':
+			timebalancing = 0;
 			break;
 		case 'l':
 			delay = 3;

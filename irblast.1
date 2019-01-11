@@ -19,6 +19,7 @@ irblast \- emit remote infrared codes via sound card
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
 [\fI-m factor\fP]
+[\fI-b\fP]
 [\fI-l\fP]
 [\fI-e\fP]
 \fIprotocol device subdevice function\fP
@@ -95,7 +96,20 @@ imprecise clocks; for example: when the factor is one, everything is sent as
 specified by the protocol; when it is two, all durations are doubled; when it
 is an half, all durations are halved; these example factors are for
 illustration only, a factor that makes sense is probably close to one, like
-\fI0.95\fP or \fI1.05\fP
+\fI0.99\fP or \fI1.01\fP
+.TP
+.B -b
+disable time error balancing; this is the mechanism that attenuates timing
+errors due to time quantization, and is used unless this option is given; the
+problem time error balancing tries to solve is that the protocol may specify
+durations that are not multiple of the duration of a sample, and are therefore
+approximated to the closest multiple; especially for protocols involving many
+intervals (e.g., NEC), these timing errors accumulate: signals may be squeezed
+or stretched in time; to avoid this, the missing or excess time of an interval
+is added to the next; this is mostly irrelevant to the duration of a single
+interval, but makes the overall timing more accurate; however, it may make the
+interval duration slightly uneven, which is why it can be disabled by this
+option
 .TP
 .B -l
 set the audio card parameters immediately, but then wait three seconds before
