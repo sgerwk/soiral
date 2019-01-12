@@ -4,7 +4,7 @@
 .
 .
 .SH NAME
-irblast \- emit remote infrared codes via sound card
+irblast \- emit remote infrared codes via an audio device
 
 .
 .
@@ -18,7 +18,7 @@ irblast \- emit remote infrared codes via sound card
 [\fI-n value\fP]
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
-[\fI-m factor\fP]
+[\fI-t factor\fP]
 [\fI-b\fP]
 [\fI-l\fP]
 [\fI-e\fP]
@@ -35,8 +35,8 @@ Emit codes used by infrared remote control through an adapter connected to the
 stereo out jack. These are small devices with a single infrared LED between the
 left and right outputs: cathode(-) on left, anode(+) on right.
 
-It may work, or only at close range, or not at all depending on the soundcard
-and the device to be controlled. If it does not work:
+It may work, or only at close range, or not at all depending on the audio
+device and the device to be controlled. If it does not work:
 
 .IP "  * " 4
 raise volume as much as possible, for example with \fBalsamixer\fP(\fI1\fP):
@@ -90,13 +90,13 @@ cycle that produces some signal given the sample rate and the period; 99 is the
 maximal non-constant duty cycle; 100 is the unoscillated signal, like \fI-f
 0\fP; the default is 50
 .TP
-.BI -m " factor
+.BI -t " factor
 scale time by \fIfactor\fP; this is intended for soundcards or devices with
 imprecise clocks; for example: when the factor is one, everything is sent as
 specified by the protocol; when it is two, all durations are doubled; when it
 is an half, all durations are halved; these example factors are for
 illustration only, a factor that makes sense is probably close to one, like
-\fI0.99\fP or \fI1.01\fP
+\fI0.99\fP or \fI1.01\fP; the carrier frequency is not affected by this option
 .TP
 .B -b
 disable time error balancing; this is the mechanism that attenuates timing
@@ -129,7 +129,7 @@ the address of the device to be controlled
 .TP
 .B subdevice
 some protocols allow for a second part of the device address;
-otherwise, this can be set to \fInone\fP
+otherwise, this is \fInone\fP
 .TP
 .B function
 the key of the remote control to emulate
@@ -147,8 +147,8 @@ requires each key to be followed by at least a repetition, the sony protocol
 that each key is sent thrice:
 
 .nf
-irblast -r 48000 rc5 $((0x05)) none $((0x02)) 1 1
-irblast -r 48000 sony20 $((0x1A)) $((0x49)) $((0x15)) 3
+irblast rc5 $((0x05)) none $((0x02)) 1 1
+irblast sony20 $((0x1A)) $((0x49)) $((0x15)) 3
 .fi
 
 .
@@ -170,9 +170,9 @@ range, or not at all.
 
 If the audio device maximal samplerate is large enough for the protocol carrier
 frequency, no division is done. In the same way, if a third of the frequency is
-too large for the sample rate, the frequency is divided by five, since square
-waves also have a component at five times their frequency. If this is not
-enough, frequency is divided by seven instead, or nine, etc.
+too large for the sample rate, the frequency is divided by five instead, since
+square waves also have a component at five times their frequency. If this is
+not enough, frequency is divided by seven, or nine, etc.
 
 .
 .
@@ -182,7 +182,7 @@ enough, frequency is divided by seven instead, or nine, etc.
 The output signal is immediately sent to an audio device, with no option for
 redirecting to a file. However, the audio device may be a virtual loopback
 device, so that the output can be recorded. If the loopback device is numbered
-one (can be checked with \fIaplay -l\fP):
+\fI1\fP (can be checked with \fIaplay -l\fP):
 
 .nf
 modprobe snd-aloop
@@ -224,7 +224,7 @@ mpv result.mp3         # or play from an mp3 reader or smartphone
 
 Some soundcards disable their output when they electrically detect that nothing
 is connected to the jack port. The infrared LED may fail this test because it
-leaves ground unconnected, so that infinite impedance appears between left and
+leaves ground unconnected, so that infinite impedance is between left and
 ground and between right and ground, as if nothing was connected.
 
 Such a detection may be disabled via \fBalsamixer\fP(\fI1\fP), selecting the
@@ -241,5 +241,6 @@ between right and ground may suffice (both are necessary).
 
 Implement the sony12 and sony15 protocols.
 
-Raise volume before generating the audio signal.
+Set maximum volume before generating the audio signal.
+Save previous setting, restore on exit.
 
