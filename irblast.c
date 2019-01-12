@@ -686,7 +686,7 @@ void usage() {
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
-	printf(" [-m factor] [-b]\n");
+	printf(" [-t factor] [-b]\n");
 	printf("\t        [-p] [-l] [-e]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
@@ -696,7 +696,7 @@ void usage() {
 	printf("\t\t-n value\tcarrier off value\n");
 	printf("\t\t-s duration\tinitial silence time\n");
 	printf("\t\t-c percentage\tduty cycle\n");
-	printf("\t\t-m factor\ttime scaling\n");
+	printf("\t\t-t factor\ttime scaling\n");
 	printf("\t\t-b\t\tdisable time quantization error balancing\n");
 	printf("\t\t-l\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
@@ -724,7 +724,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:m:bleh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:bleh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -744,7 +744,7 @@ int main(int argc, char *argv[]) {
 		case 'c':
 			dutycycle = atoi(optarg);
 			break;
-		case 'm':
+		case 't':
 			timefactor = atof(optarg);
 			break;
 		case 'b':
