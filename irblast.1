@@ -33,7 +33,7 @@ irblast \- emit remote infrared codes via an audio device
 
 Emit codes used by infrared remote control through an adapter connected to the
 stereo out jack. These are small devices with a single infrared LED between the
-left and right outputs: cathode(-) on left, anode(+) on right.
+left and right outputs: anode(+) on left, cathode(-) on right.
 
 It may work, or only at close range, or not at all depending on the audio
 device and the device to be controlled. If it does not work:
@@ -190,7 +190,7 @@ arecord -D hw:1,0 -f S16_LE -r 44100 -c 2 -t wav result.wav &
 sleep 1
 irblast -d hw:1,1 -r 44100
 killall arecord
-sox result.wav result.au remix 2
+sox result.wav result.au remix 1
 signal2pbm -i 20 -c result.au ; fbi output.png
 remote -c result.au
 .fi

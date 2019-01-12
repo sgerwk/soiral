@@ -39,10 +39,10 @@
  * carrier
  */
 int16_t hold =        10;
-int16_t left_even =  -INT16_MAX;
-int16_t left_odd =    INT16_MAX;
-int16_t right_even =  INT16_MAX;
-int16_t right_odd =  -INT16_MAX;
+int16_t left_even =   INT16_MAX;
+int16_t left_odd =   -INT16_MAX;
+int16_t right_even = -INT16_MAX;
+int16_t right_odd =   INT16_MAX;
 
 int dutycycle = 50;
 double timefactor = 1.0;
@@ -161,8 +161,8 @@ snd_pcm_t *audio(char *name, unsigned int *rate) {
 /*
  * switch carrier on or off for the given duration
  *
- * the device has a simple ir led between left(-) and right (+); therefore,
- * left=-INT16_MAX,right=INT16_MAX is maximum power; zero power could be
+ * the device has a simple ir led between left(+) and right (-); therefore,
+ * left=+INT16_MAX,right=-INT16_MAX is maximum power; zero power could be
  * realized by 0 on both channels, but this would make the signal average
  * greater than zero, and this dc component would be progressively filtered
  * out, with a consequent decrease of power
@@ -557,6 +557,25 @@ int test_code(int device, int subdevice, int function,
 		carrier(0, 400, &overtime, period, rate, buffer, &pos);
 		carrier(1, 800, &overtime, period, rate, buffer, &pos);
 		carrier(0, 400, &overtime, period, rate, buffer, &pos);
+		break;
+	case 2:
+		// check LED polarity: flash twice if left=+ right=-,
+		left_even = INT16_MAX;
+		left_odd = INT16_MAX;
+		right_even = -INT16_MAX;
+		right_odd = -INT16_MAX;
+		carrier(1, 40000, &overtime, period, rate, buffer, &pos);
+		carrier(0, 300000, &overtime, period, rate, buffer, &pos);
+		carrier(1, 40000, &overtime, period, rate, buffer, &pos);
+
+		// check LED polarity: flash once if left=- right=+,
+		left_even = -INT16_MAX;
+		left_odd = -INT16_MAX;
+		right_even = INT16_MAX;
+		right_odd = INT16_MAX;
+		carrier(0, 300000, &overtime, period, rate, buffer, &pos);
+		carrier(1, 40000, &overtime, period, rate, buffer, &pos);
+
 		break;
 	}
 
