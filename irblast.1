@@ -21,6 +21,8 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-t factor\fP]
 [\fI-b\fP]
 [\fI-l\fP]
+[\fI-i\fP]
+[\fI-w\fP]
 [\fI-e\fP]
 \fIprotocol device subdevice function\fP
 [\fItimes\fP
@@ -48,7 +50,7 @@ scale is muted, that is, it has MM on the bottom instead of 00
 .IP "  * "
 check whether the correct audio device is used with option \fI-d\fP
 .IP "  * "
-try changing the sample rate with option \fI-r\fP
+try changing the duty cycle: \fI-c 99\fP or \fI-c 1\fP
 
 .
 .
@@ -64,12 +66,13 @@ the audio device is set at this sample rate; the default is the highest support
 rate
 .TP
 .BI -f " frequency
-the carrier frequency; the default depends on the protocol (for example,
-38000Hz for the NEC protocol); if the frequency is too high for the sample
-rate, it is divided by 3, or by 5, or by 7, etc.; see \fIIMPLEMENTATION AND
-LIMITATIONS\fP below for the reason why; the frequency is further approximated
-to make its period an integer number of microseconds; a frequency of 0 makes
-the signal unoscillated (remains on for the required duration of the carrier)
+the carrier frequency in Hertz; the default depends on the protocol (for
+example, 38000Hz for the NEC protocol); if the frequency is too high for the
+sample rate, it is divided by 3, or by 5, or by 7, etc.; see \fIIMPLEMENTATION
+AND LIMITATIONS\fP below for the reason why; the frequency is further
+approximated to make its period an integer number of microseconds; a frequency
+of 0Hz makes the signal unoscillated (remains on for the required duration of
+the carrier): this may require option \fI-i\fP: see \fIHARDWARE\fP, below
 .TP
 .BI -n " value
 carrier off value; the carrier is realized by oscillating left and right output
@@ -88,7 +91,8 @@ this duration
 the duty cycle, from 0 to 100; some values are special: 1 is the minimal duty
 cycle that produces some signal given the sample rate and the period; 99 is the
 maximal non-constant duty cycle; 100 is the unoscillated signal, like \fI-f
-0\fP; the default is 50
+0\fP; the default is 50; this option may require option \fI-i\fP, see
+\fIHARDWARE\fP, below
 .TP
 .BI -t " factor
 scale time by \fIfactor\fP; this is intended for soundcards or devices with
@@ -112,6 +116,20 @@ interval durations slightly uneven, which is why it can be disabled by this
 option
 .TP
 .B -l
+ensure that the carrier on intervals have at least the length dictated by the
+protocol; the default is to use the same clock for all intervals, and to end an
+interval at its scheduled ending time; as a result, a carrier on interval may
+begin or end with the carrier off; this option makes the clock restart at the
+beginning of each carrier on interval, which ensures that the interval always
+starts with carrier on, and to delay its ending time until the carrier is on
+again; this option may require option \fI-i\fP: see \fIHARDWARE\fP, below
+.TP
+.B -i
+invert left and right output; this is only relevant when using a duty cycle
+other than the default 50% or a frequency of 0; see \fIHARDWARE\fP below, on
+whether to use this option or not
+.TP
+.B -w
 set the audio card parameters immediately, but then wait three seconds before
 emitting the codes; this is for using a loopback audio device, unless setting
 the same audio parameters at both ends of it
@@ -150,6 +168,47 @@ that each key is sent thrice:
 irblast rc5 $((0x05)) none $((0x02)) 1 1
 irblast sony20 $((0x1A)) $((0x49)) $((0x15)) 3
 .fi
+
+.
+.
+.
+.SH HARDWARE
+
+The emitter is a 3.5 jack with a infrared LED connected between the left and
+right channels. Whether anode anode(+) is on left and cathode(-) on right or
+vice versa is usually irrelevant, as the program outputs signals that are
+symmetric between the two channels: the carrier is an alternation of two
+phases, where the first has maximal positive value on the right channel and
+maximal negative value on the left channel and the second is the contrary.
+
+The only case when the direction of the LED counts is when setting a duty cycle
+that is different than the default 50% or a frequency of 0Hz (which is the same
+as a duty cycle of 100%). The direction can be established by \fIirblast test 2
+none 0\fP. The infrared LED should flash twice. If it flashes once, the
+direction is inverted, and option \fI-i\fP is necessary to take this into
+account. To see the LED flashing a camera is necessary as the human eye does
+not see infrared light; a mobile or webcam suffices.
+
+If the LED does not flash at all, or only emits a very fleeble ligth, then
+something may be wrong with the mixer. The volume may not be the highest
+possible, or automuting is enabled (see also \fIJACK DETECTION\fP, below).
+
+.
+.
+.
+.SH JACK DETECTION
+
+Some soundcards disable their output when they electrically detect that nothing
+is connected to the jack port. The infrared LED may fail this test because it
+leaves ground unconnected, so that infinite impedance is between left and
+ground and between right and ground, as if nothing was connected.
+
+Such a detection may be disabled via \fBalsamixer\fP(\fI1\fP), selecting the
+sound card with key F6 and muting the "auto-mute" control if present by
+pressing key 'm'. If this control is not present, the only solution is to
+connect the infrared LED to an output of a splitter, and a real stereo device
+to the other. A resistance of 100 Ohm between left and ground and an equal one
+between right and ground may suffice (both are necessary).
 
 .
 .
@@ -216,23 +275,6 @@ compressing are to be avoided:
 sox result.wav -D -C 0 result.mp3
 mpv result.mp3         # or play from an mp3 reader or smartphone
 .fi
-
-.
-.
-.
-.SH JACK DETECTION
-
-Some soundcards disable their output when they electrically detect that nothing
-is connected to the jack port. The infrared LED may fail this test because it
-leaves ground unconnected, so that infinite impedance is between left and
-ground and between right and ground, as if nothing was connected.
-
-Such a detection may be disabled via \fBalsamixer\fP(\fI1\fP), selecting the
-sound card with key F6 and muting the "auto-mute" control if present by
-pressing key 'm'. If this control is not present, the only solution is to
-connect the infrared LED to an output of a splitter, and a real stereo device
-to the other. A resistance of 100 Ohm between left and ground and an equal one
-between right and ground may suffice (both are necessary).
 
 .
 .

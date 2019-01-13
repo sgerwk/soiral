@@ -44,10 +44,12 @@ int16_t left_odd =   -INT16_MAX;
 int16_t right_even = -INT16_MAX;
 int16_t right_odd =   INT16_MAX;
 
+int ensurelength = 0;
 int dutycycle = 50;
 double timefactor = 1.0;
 int timebalancing = 1;
 int markend = 0;
+int multiplier = 100; // time granularity: 10 means 1/10 microsecond
 
 /*
  * timing statistics
@@ -176,14 +178,33 @@ void carrier(int value, int duration, int *overtime,
 	int t, target, boundary, start, o;
 
 	start = *overtime;
-	target = duration * timefactor - sample / 2;
+	target = multiplier * duration * timefactor - sample / 2;
 	boundary =
 		dutycycle == 1 ?   sample :
 		dutycycle == 99 ?  period - sample :
 		dutycycle == 100 ? period :
 				   period * dutycycle / 100;
 
-	for (t = *overtime; t < target; t += sample) {
+
+	// common clock (default): if time balancing is enabled (the default),
+	// all impulses are generated from the same clock
+	// for (t = *overtime; t < target; t += sample)
+
+	// per-impulse clock: restart clock at every interval (but the time
+	// missing or exceding the previous interval is still included); this
+	// guarantees that each impulse starts with carrier on; the second part
+	// of the condition guarantees that each impulse ends by carrier on
+	// for (t = 0;
+	//      t < target - *overtime || (value && t % period < boundary);
+	//      t += sample)
+
+	for (t = ensurelength ?
+		0 :
+		*overtime;
+	     ensurelength ?
+		(t < target - *overtime || (value && t % period < boundary)) :
+		t < target;
+	     t += sample) {
 		// left channel
 		buffer[(*pos)++] =
 			value == 0 ?
@@ -203,7 +224,7 @@ void carrier(int value, int duration, int *overtime,
 		}
 	}
 
-	o = t - duration * timefactor;
+	o = t - target;
 	if (o < minovertime)
 		minovertime = o;
 	if (o > maxovertime)
@@ -223,11 +244,11 @@ void carrier(int value, int duration, int *overtime,
 /*
  * nec protocol
  *
- *	lead:		9000 usecs 1
- *	separator:	4500 usecs 0
- *	mark:		 560 usecs 1
- *	zero:		 560 usecs 0
- *	one:		1680 usecs 0
+ *	lead:		9000   usecs 1
+ *	separator:	4500   usecs 0
+ *	mark:		 562.5 usecs 1
+ *	zero:		 562.5 usecs 0
+ *	one:		1687.5 usecs 0
  *
  *	code:
  *		lead - separator - address - function - ~function - mark
@@ -260,12 +281,12 @@ int necxcode(int subprot, int device, int subdevice, int function,
 	carrier(0, 4500, &overtime, period, sample, buffer, &pos);
 
 	for (i = 0; i < 32; i++) {
-		carrier(1, 560, &overtime, period, sample, buffer, &pos);
-		bit = (encoding & (1 << i)) ? 1680 : 560;
-		carrier(0, bit, &overtime, period, sample, buffer, &pos);
+		bit = (encoding & (1 << i)) ? 2250 : 1125;
+		carrier(1, 562, &overtime, period, sample, buffer, &pos);
+		carrier(0, bit - 562, &overtime, period, sample, buffer, &pos);
 	}
 
-	carrier(1, 560, &overtime, period, sample, buffer, &pos);
+	carrier(1, 562, &overtime, period, sample, buffer, &pos);
 	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
@@ -296,7 +317,7 @@ int necxrepeat(int subprot, int device, int subdevice, int function,
 	carrier(1, subprot == 2 ? 4500 : 9000, &overtime,
 		period, sample, buffer, &pos);
 	carrier(0, 4500 / 2, &overtime, period, sample, buffer, &pos);
-	carrier(1, 560, &overtime, period, sample, buffer, &pos);
+	carrier(1, 562, &overtime, period, sample, buffer, &pos);
 	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
@@ -701,8 +722,8 @@ void usage() {
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
-	printf(" [-t factor] [-b]\n");
-	printf("\t        [-p] [-l] [-e]\n");
+	printf(" [-t factor] [-b] [-i]\n");
+	printf("\t        [-l] [-w] [-e]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -713,7 +734,9 @@ void usage() {
 	printf("\t\t-c percentage\tduty cycle\n");
 	printf("\t\t-t factor\ttime scaling\n");
 	printf("\t\t-b\t\tdisable time quantization error balancing\n");
-	printf("\t\t-l\t\tstart with a 3-seconds pause (for loopback)\n");
+	printf("\t\t-l\t\tensure carrier-on interval length\n");
+	printf("\t\t-i\t\tinverted adapter\n");
+	printf("\t\t-w\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
 	printf("\t\tprotocol\tnec, nec2, rc5, sharp, sony20, test\n");
 	printf("\t\tdevice\t\taddress of device, e.g., $((0x12))\n");
@@ -728,18 +751,20 @@ void usage() {
  */
 int main(int argc, char *argv[]) {
 	int opt;
-	int delay = 0, optrate = -1, optfrequency = -1, silence = 80000;
+	int delay = 0, inverted = 0;
+	int optrate = -1, optfrequency = -1, silence = 80000;
 	char *outdevice = "hw:0";
 	snd_pcm_t *handle;
 	enum protocol protocol;
 	int device, subdevice, nosubdevice, function;
 	int times = 1, rtimes = 0;
+	int16_t temp;
 	unsigned int frequency, divisor, rate, period, sample;
 	int i, res;
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:bleh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:bliweh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -766,6 +791,12 @@ int main(int argc, char *argv[]) {
 			timebalancing = 0;
 			break;
 		case 'l':
+			ensurelength = 1;
+			break;
+		case 'i':
+			inverted = 1;
+			break;
+		case 'w':
 			delay = 3;
 			break;
 		case 'e':
@@ -779,7 +810,7 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-	if (argc - optind < 3) {
+	if (argc - optind < 4) {
 		printf("not enough arguments\n");
 		usage();
 		return EXIT_FAILURE;
@@ -831,7 +862,7 @@ int main(int argc, char *argv[]) {
 	handle = audio(outdevice, &rate);
 	if (handle == NULL)
 		exit(EXIT_FAILURE);
-	sample = 1000000 / rate;
+	sample = 1000000 * multiplier / rate;
 
 				/* carrier frequency */
 
@@ -884,14 +915,23 @@ int main(int argc, char *argv[]) {
 	frequency /= divisor;
 	if (frequency * 2 > rate)
 		frequency = rate / 2;
-	period = 1000000 / frequency;
+	period = 1000000 * multiplier / frequency;
+
+	if (inverted) {
+		temp = left_even;
+		left_even = right_even;
+		right_even = temp;
+		temp = left_odd;
+		left_odd = right_odd;
+		right_odd = temp;
+	}
 
 				/* print parameters */
 
 	printf("sample rate: %d samples per second\n", rate);
-	printf("sample duration: %d microseconds\n", sample);
-	printf("carrier frequency: %d Hertz\n", 1000000 / period);
-	printf("carrier period: %d microseconds\n", period);
+	printf("sample duration: %d microseconds\n", sample / multiplier);
+	printf("carrier frequency: %d Hertz\n", 1000000 * multiplier / period);
+	printf("carrier period: %d microseconds\n", period / multiplier);
 
 				/* wait, if -l is passed */
 
