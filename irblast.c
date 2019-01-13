@@ -526,8 +526,6 @@ int test_code(int device, int subdevice, int function,
 	pos = 0;
 	overtime = 0;
 
-	carrier(0, 400, &overtime, period, rate, buffer, &pos);
-
 	switch (device) {
 	case 0:
 		t = 10 * function;
@@ -578,8 +576,6 @@ int test_code(int device, int subdevice, int function,
 
 		break;
 	}
-
-	printf("\n");
 
 	carrier(0, 1000, &overtime, period, rate, buffer, &pos);
 
@@ -903,7 +899,6 @@ int main(int argc, char *argv[]) {
 
 				/* send */
 	
-	// sendcode(handle, period, sample, protocol_test, 0, 0, 50, 0);
 	sendcode(handle, period, sample, protocol_hold, silence, 0, 0, 0);
 	for (i = 0; i < times; i++)
 		sendcode(handle, period, sample,
