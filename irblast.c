@@ -181,11 +181,11 @@ void carrier(int value, int duration, int *overtime,
 	equaltarget = multiplier * duration * timefactor - sample / 2;
 	target = multiplier * duration * timefactor *
 		(value == 0 ? offtimefactor : ontimefactor) - sample / 2;
-	boundary =
-		dutycycle == 1 ?   sample :
-		dutycycle == 99 ?  period - sample :
-		dutycycle == 100 ? period :
-				   period * dutycycle / 100;
+	boundary = period * dutycycle / 100;
+	if (dutycycle != 0 && boundary < sample)
+		boundary = sample;
+	if (dutycycle != 100 && boundary > period - sample)
+		boundary = period - sample;
 
 
 	// common clock (default): if time balancing is enabled (the default),
