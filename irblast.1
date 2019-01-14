@@ -18,6 +18,7 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-n value\fP]
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
+[\fI-g time\fP]
 [\fI-t factor\fP]
 [\fI-o factor\fP]
 [\fI-v\fP]
@@ -96,6 +97,11 @@ non-empty positive half and a non-empty negative half; the duty cycle
 determines the proportion of their length; this option may require option
 \fI-i\fP, see \fIHARDWARE\fP, below
 .TP
+.BI -g " time
+start every carrier-on interval with a pulse of this length, in microseconds;
+this is intended to compensate a latency of the audio device or the LED to turn
+on
+.TP
 .BI -t " factor
 scale time by \fIfactor\fP; this is intended for soundcards or devices with
 imprecise clocks; for example: when the factor is one, everything is sent as
@@ -132,12 +138,9 @@ option
 .TP
 .B -l
 ensure that the carrier on intervals have at least the length dictated by the
-protocol; the default is to use the same clock for all intervals, and to end an
-interval at its scheduled ending time; as a result, a carrier on interval may
-begin or end with the carrier off; this option makes the clock restart at the
-beginning of each carrier on interval, which ensures that the interval always
-starts with carrier on, and to delay its ending time until the carrier is on
-again; this option may require option \fI-i\fP: see \fIHARDWARE\fP, below
+protocol; if such an interval ends with the carrier off, it is prolonged until
+the carrier is on again for at least a sample; this option may require option
+\fI-i\fP: see \fIHARDWARE\fP, below
 .TP
 .B -i
 invert left and right output; this is only relevant when using a duty cycle

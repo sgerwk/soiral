@@ -50,6 +50,7 @@ double timefactor = 1.0, ontimefactor = 1.0, offtimefactor = 1.0;
 int timebalancing = 1, valuetimebalancing = 0;
 int markend = 0;
 int multiplier = 100; // time granularity: 10 means 1/10 microsecond
+int startup = 0;
 
 /*
  * timing statistics
@@ -188,24 +189,16 @@ void carrier(int value, int duration, int *overtime,
 		boundary = period - sample;
 
 
-	// common clock (default): if time balancing is enabled (the default),
-	// all impulses are generated from the same clock
-	// for (t = *overtime; t < target; t += sample)
+	for (t = 0;
+	     t < startup * multiplier && value && t < target - *overtime;
+	     t += sample) {
+		buffer[(*pos)++] = left_even;
+		buffer[(*pos)++] = right_even;
+	}
 
-	// per-impulse clock: restart clock at every interval (but the time
-	// missing or exceding the previous interval is still included); this
-	// guarantees that each impulse starts with carrier on; the second part
-	// of the condition guarantees that each impulse ends by carrier on
-	// for (t = 0;
-	//      t < target - *overtime || (value && t % period < boundary);
-	//      t += sample)
-
-	for (t = ensurelength ?
-		0 :
-		*overtime;
-	     ensurelength ?
-		(t < target - *overtime || (value && t % period < boundary)) :
-		t < target;
+	for (t = t;
+	     t < target - *overtime ||
+		(ensurelength && value && t % period < boundary);
 	     t += sample) {
 		// left channel
 		buffer[(*pos)++] =
@@ -768,7 +761,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:o:vbliweh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:g:t:o:vbliweh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -787,6 +780,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'c':
 			dutycycle = atoi(optarg);
+			break;
+		case 'g':
+			startup = atoi(optarg);
 			break;
 		case 't':
 			timefactor = atof(optarg);
