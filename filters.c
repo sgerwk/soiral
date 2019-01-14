@@ -37,6 +37,7 @@
 struct audiofile {
 	FILE *fd;
 	int ascii;
+	int channels;
 };
 
 /*
@@ -111,6 +112,7 @@ void *read_init(char *filename, int ascii, struct status *status) {
 
 	if (! ascii) {
 		fread(header, 4, 6, read->fd);
+
 		for (i = 0; i < 6; i++)
 			header[i] = be32toh(header[i]);
 
@@ -124,11 +126,11 @@ void *read_init(char *filename, int ascii, struct status *status) {
 		}
 		if (header[4] != 44100)
 			fprintf(stderr, "WARNING: sample rate is not 44100\n");
-		if (header[5] != 1) {
-			printf("%s: number of channel is not 1\n", filename);
-			exit(EXIT_FAILURE);
-		}
+		if (header[5] != 1)
+			fprintf(stderr,
+				"WARNING: using channel 1 of %d\n", header[5]);
 
+		read->channels = header[5];
 		fseek(read->fd, header[1], SEEK_SET);
 	}
 
@@ -139,7 +141,8 @@ void *read_init(char *filename, int ascii, struct status *status) {
 int read_value(int value, void *internal, struct status *status) {
 	struct audiofile *read;
 	int out;
-	int16_t v;
+	int16_t v, n;
+	int i, channel = 0;
 
 	(void) value;
 	read = (struct audiofile *) internal;
@@ -149,10 +152,14 @@ int read_value(int value, void *internal, struct status *status) {
 			return out;
 	}
 	else {
-		if (1 == fread(&v, 2, 1, read->fd)) {
-			v = be16toh(v);
-			return v;
+		for (i = 0; i < read->channels; i++) {
+			if (1 != fread(&n, 2, 1, read->fd))
+				break;
+			if (i == channel)
+				v = be16toh(n);
 		}
+		if (i == read->channels)
+			return v;
 	}
 
 	status->ended = 1;
