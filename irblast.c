@@ -46,8 +46,8 @@ int16_t right_odd =   INT16_MAX;
 
 int ensurelength = 0;
 int dutycycle = 50;
-double timefactor = 1.0;
-int timebalancing = 1;
+double timefactor = 1.0, ontimefactor = 1.0, offtimefactor = 1.0;
+int timebalancing = 1, valuetimebalancing = 0;
 int markend = 0;
 int multiplier = 100; // time granularity: 10 means 1/10 microsecond
 
@@ -175,10 +175,12 @@ snd_pcm_t *audio(char *name, unsigned int *rate) {
 void carrier(int value, int duration, int *overtime,
 		int period, int sample,
 		int16_t *buffer, int *pos) {
-	int t, target, boundary, start, o;
+	int t, equaltarget, target, boundary, start, o;
 
 	start = *overtime;
-	target = multiplier * duration * timefactor - sample / 2;
+	equaltarget = multiplier * duration * timefactor - sample / 2;
+	target = multiplier * duration * timefactor *
+		(value == 0 ? offtimefactor : ontimefactor) - sample / 2;
 	boundary =
 		dutycycle == 1 ?   sample :
 		dutycycle == 99 ?  period - sample :
@@ -224,7 +226,7 @@ void carrier(int value, int duration, int *overtime,
 		}
 	}
 
-	o = t - target;
+	o = t - (valuetimebalancing ? equaltarget : target);
 	if (o < minovertime)
 		minovertime = o;
 	if (o > maxovertime)
@@ -722,8 +724,8 @@ void usage() {
 	printf("usage:\n");
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
-	printf(" [-t factor] [-b] [-i]\n");
-	printf("\t        [-l] [-w] [-e]\n");
+	printf(" [-t factor] [-o factor]\n");
+	printf("\t        [-v] [-b] [-i] [-l] [-w] [-e]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -733,6 +735,8 @@ void usage() {
 	printf("\t\t-s duration\tinitial silence time\n");
 	printf("\t\t-c percentage\tduty cycle\n");
 	printf("\t\t-t factor\ttime scaling\n");
+	printf("\t\t-o factor\tcarrier-on time scaling\n");
+	printf("\t\t-v\t\tcompensate carrier-on time scaling\n");
 	printf("\t\t-b\t\tdisable time quantization error balancing\n");
 	printf("\t\t-l\t\tensure carrier-on interval length\n");
 	printf("\t\t-i\t\tinverted adapter\n");
@@ -764,7 +768,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:bliweh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:t:o:vbliweh")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -786,6 +790,16 @@ int main(int argc, char *argv[]) {
 			break;
 		case 't':
 			timefactor = atof(optarg);
+			break;
+		case 'o':
+			ontimefactor = atof(optarg);
+			if (ontimefactor < 1) {
+				offtimefactor = 1 / ontimefactor;
+				ontimefactor = 1;
+			}
+			break;
+		case 'v':
+			valuetimebalancing = 1;
 			break;
 		case 'b':
 			timebalancing = 0;

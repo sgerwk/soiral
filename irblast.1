@@ -19,6 +19,8 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
 [\fI-t factor\fP]
+[\fI-o factor\fP]
+[\fI-v\fP]
 [\fI-b\fP]
 [\fI-l\fP]
 [\fI-i\fP]
@@ -101,6 +103,19 @@ specified by the protocol; when it is two, all durations are doubled; when it
 is an half, all durations are halved; these example factors are for
 illustration only, a factor that makes sense is probably close to one, like
 \fI0.99\fP or \fI1.01\fP; the carrier frequency is not affected by this option
+.TP
+.BI -o " factor
+expand the carrier-on intervals by this factor; for example, if \fIfactor\fP is
+\fI1.1\fP and the protocol has a 100 microseconds of carrier on and 100 of
+carrier off, the result is 110 on and 100 off; this compensates a delay of the
+LED in turning on; when \fIfactor\fP is less than one, the carrier on intervals
+remain the same but the carrier off intervals are expanded by \fI1/factor\fP;
+see also \fI-v\fP
+.TP
+.B -v
+compensate the carrier on expansion by making the carrier off intervals
+shorter; in the above example, the 100-100 intervals become 110-90 instead of
+110-100; this option has no effect if \fI-b\fP is also passed
 .TP
 .B -b
 disable time error balancing; this is the mechanism that attenuates timing
