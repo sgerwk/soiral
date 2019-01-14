@@ -6,8 +6,10 @@ card or serial port.
 ## Receive
 
 The adapter is a single infrared photodiode connected to the microphone jack:
-[the infrared receiver page](http://ststefanov.eu/?p=142&lang=en).
-It may be soldered or assembled using breakouts.
+[the infrared receiver page](http://ststefanov.eu/?p=142&lang=en). It may be
+soldered or assembled using breakouts. Also the el-cheapo sound emitter (the
+one used by irblast, below) may work at short range; do not insert it
+completely in the jack.
 
 ![sound receiver schematics](images/sound-receiver-schematics.png "sound receiver
 schematics")
