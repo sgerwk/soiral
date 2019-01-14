@@ -77,7 +77,7 @@ int maxmixer(char *name) {
 /*
  * open and configure sound output
  */
-snd_pcm_t *audio(char *name, int frequency) {
+snd_pcm_t *audio(char *name, int frequency, int *channels) {
 	int res;
 	snd_pcm_t *handle;
 	snd_pcm_info_t *info;
@@ -136,7 +136,8 @@ snd_pcm_t *audio(char *name, int frequency) {
 	snd_pcm_hw_params_get_channels(params, &c);
 	fprintf(stderr, "channels: %d\n", c);
 	if (c != 1)
-		fprintf(stderr, "ERROR: %d channels, requested 1\n", c);
+		fprintf(stderr, "WARNING: using channel 1 of %d\n", c);
+	*channels = c;
 
 	snd_pcm_hw_params_get_access(params, &a);
 	if (a != SND_PCM_ACCESS_RW_INTERLEAVED)
@@ -160,6 +161,7 @@ snd_pcm_t *audio(char *name, int frequency) {
 #define NFRAMES (32*256)
 struct audiobuffer {
 	snd_pcm_t *handle;
+	int channels;
 	int16_t buffer[NFRAMES * sizeof(int16_t)];
 	int pos;
 };
@@ -186,7 +188,7 @@ void *microphone_init(char *device, struct status *status) {
 				/* set pcm */
 
 	frequency = 44100;
-	buffer->handle = audio(device, frequency);
+	buffer->handle = audio(device, frequency, &buffer->channels);
 	if (buffer->handle == NULL)
 		exit(EXIT_FAILURE);
 
@@ -198,14 +200,19 @@ void *microphone_init(char *device, struct status *status) {
 int microphone_value(int value, void *internal, struct status *status) {
 	struct audiobuffer *buffer;
 	int res;
+	int16_t v;
+	int channel = 0;
 
 	(void) value;
 	(void) status;
 
 	buffer = (struct audiobuffer *) internal;
 
-	if (buffer->pos < NFRAMES)
-		return buffer->buffer[buffer->pos++];
+	if (buffer->pos < NFRAMES * buffer->channels) {
+		v = buffer->buffer[buffer->pos + channel];
+		buffer->pos += buffer->channels;
+		return v;
+	}
 
 	res = snd_pcm_readi(buffer->handle, buffer->buffer, NFRAMES);
 	if (res == -EPIPE) {
@@ -218,7 +225,9 @@ int microphone_value(int value, void *internal, struct status *status) {
 	}
 
 	buffer->pos = 0;
-	return buffer->buffer[buffer->pos++];
+	v = buffer->buffer[buffer->pos + channel];
+	buffer->pos += buffer->channels;
+	return v;
 }
 
 int microphone_end(void *internal, struct status *status) {
