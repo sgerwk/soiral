@@ -55,10 +55,11 @@ void newline(FILE *out, int *l) {
 /*
  * read an input value
  */
-int input(FILE *in, int ascii, int *value) {
+int input(FILE *in, int ch, int nch, int ascii, int *value) {
 	int res;
 	char line[100];
 	int16_t v;
+	int i;
 
 	if (ascii) {
 		res = fscanf(in, "%d", value);
@@ -68,10 +69,16 @@ int input(FILE *in, int ascii, int *value) {
 		return EOF;
 	}
 
-	res = fread(&v, 2, 1, in);
-	v = be16toh(v);
-	*value = v;
-	return res == 0 ? EOF : res;
+	for (i = 0; i < nch; i++) {
+		res = fread(&v, sizeof(int16_t), 1, in);
+		if (res == 0)
+			return EOF;
+		if (i != ch - 1)
+			continue;
+		v = be16toh(v);
+		*value = v;
+	}
+	return res;
 }
 
 /*
@@ -111,7 +118,7 @@ int main(int argc, char *argv[]) {
 	char *inname, *outname = "output.pbm";
 	FILE *in, *out;
 	uint32_t header[6];
-	int ascii = 0;
+	int ascii = 0, ch = 1, nch = 1;
 	int maxvalue = INT16_MAX, width = 640, interline = 10;
 	int expansion = 1, timeslot = 1, significant = 0, nosignalheight = 6;
 	int jump = 0, displayaverage = 0, zero = 0;
@@ -219,10 +226,9 @@ int main(int argc, char *argv[]) {
 			printf("wrong sample rate, 44100 required\n");
 			exit(EXIT_FAILURE);
 		}
-		if (be32toh(header[5]) != 1) {
-			printf("wrong number of channels, 1 required\n");
-			exit(EXIT_FAILURE);
-		}
+		nch = be32toh(header[5]);
+		if (nch != 1)
+			printf("warning: using channel 1 of %d\n", nch);
 
 		fseek(in, be32toh(header[1]), SEEK_SET);
 	}
@@ -268,7 +274,7 @@ int main(int argc, char *argv[]) {
 			average[r] = 0;
 			if (timeslot <= 0) {
 				if (t == 0)
-					res = input(in, ascii, &val);
+					res = input(in, ch, nch, ascii, &val);
 				value[r] = val;
 				minimal[r] = val;
 				maximal[r] = val;
@@ -277,7 +283,8 @@ int main(int argc, char *argv[]) {
 			}
 			else {
 				for (t = 0; t < timeslot; t++) {
-					res = input(in, ascii, &(value[r]));
+					res = input(in, ch, nch, ascii,
+						&(value[r]));
 					if (res == -1)
 						continue;
 					if (res == EOF)
