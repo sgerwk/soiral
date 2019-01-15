@@ -33,7 +33,7 @@
  *	serial2sound &
  *	serial ttySS0
  *	sox output.au -r 44100 resampled.au
- *	signal2pbm -t 4 -e 2 -i 20 -c resampled.au ; fbi output.png
+ *	signal2pbm -t 4 -e 2 -i 20 -p resampled.au ; fbi output.png
  *	remote resampled.au
  *
  * todo:

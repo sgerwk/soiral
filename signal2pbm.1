@@ -77,6 +77,12 @@ draw the line of signal level 0 in addition to the actual signal level
 input is a sequence of numbers in ascii, one per line;
 the default is a 1-channel 16-bit linear PCM AU file with header
 .TP
+.BI -c " channel
+select the channel number; only applies to AU files
+.TP
+.B -p
+convert output to png; requires \fBnetpbm\fP(\fI1\fP)
+.TP
 .B -v
 run the fbi(1) viewer to show the resulting image; does not work at the end of
 a pipe, since the viewer needs the standard input to come from a console
@@ -92,11 +98,11 @@ output file; \fIoutput.pbm\fP, if omitted
 .
 .SH EXAMPLE
 
-Visualize what \fBremote\fP(\fI1\fP) has received:
+Visualize what \fBremote\fP(\fI1\fP) received:
 
 .nf
 remote -l
-signal2pbm -c log.au
+signal2pbm -p log.au
 fbi output.png
 .fi
 

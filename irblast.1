@@ -269,7 +269,7 @@ sleep 1
 irblast -d hw:1,1 -r 44100
 killall arecord
 sox result.wav result.au remix 1
-signal2pbm -i 20 -c result.au ; fbi output.png
+signal2pbm -i 20 -p result.au ; fbi output.png
 remote -c result.au
 .fi
 

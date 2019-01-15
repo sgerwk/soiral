@@ -94,6 +94,7 @@ void usage() {
 	printf("usage:\n");
 	printf("\tsignal2pbm [options] infile [outfile.pbm]\n");
 	printf("\t\t-f\t\tread data in ascii format, rather than au\n");
+	printf("\t\t-c number\tchannel number (default 1)\n");
 	printf("\t\t-w width\twidth of image (height depends on samples)\n");
 	printf("\t\t-t timeslot\tsamples squeezed in a horizontal pixel\n");
 	printf("\t\t-m maxvalue\tthe maximal value for the samples\n");
@@ -104,7 +105,7 @@ void usage() {
 	printf("\t\t-j\t\tdo not connect jumps in the signal line\n");
 	printf("\t\t-a\t\talso show average of signal in the timeslot\n");
 	printf("\t\t-0\t\tdraw the level of 0 signal\n");
-	printf("\t\t-c\t\tconvert output to png (requires netpbm)\n");
+	printf("\t\t-p\t\tconvert output to png (requires netpbm)\n");
 	printf("\t\t-v\t\tshow image with an external viewer (fbi)\n");
 	printf("\t\t-h\t\tthis help\n");
 	printf("\t\toutfile.pbm\tdefault is output.pbm\n");
@@ -138,7 +139,7 @@ int main(int argc, char *argv[]) {
 
 					/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:fja0cvh")))
+	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:fc:ja0pvh")))
 		switch (opt) {
 		case 'w':
 			INTOPT(width, 1, "width");
@@ -174,6 +175,9 @@ int main(int argc, char *argv[]) {
 			ascii = 1;
 			break;
 		case 'c':
+			INTOPT(ch, 1, "channel");
+			break;
+		case 'p':
 			convert = 1;
 			break;
 		case 'v':
@@ -227,8 +231,13 @@ int main(int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		}
 		nch = be32toh(header[5]);
+		if (ch <= 0 || ch > nch) {
+			printf("invalid channel number: %d is ", ch);
+			printf("not between 1 and %d\n", nch);
+			exit(EXIT_FAILURE);
+		}
 		if (nch != 1)
-			printf("warning: using channel 1 of %d\n", nch);
+			printf("using channel %d of %d\n", ch, nch);
 
 		fseek(in, be32toh(header[1]), SEEK_SET);
 	}
