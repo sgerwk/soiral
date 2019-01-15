@@ -282,7 +282,8 @@ int necxcode(int subprot, int device, int subdevice, int function,
 	}
 
 	carrier(1, 562, &overtime, period, sample, buffer, &pos);
-	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
+	carrier(0, 108000 - sample * pos / multiplier / 2,
+		&overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -313,7 +314,8 @@ int necxrepeat(int subprot, int device, int subdevice, int function,
 		period, sample, buffer, &pos);
 	carrier(0, 4500 / 2, &overtime, period, sample, buffer, &pos);
 	carrier(1, 562, &overtime, period, sample, buffer, &pos);
-	carrier(0, 110000 - pos / 2, &overtime, period, sample, buffer, &pos);
+	carrier(0, 108000 - sample * pos / multiplier / 2,
+		&overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -436,7 +438,8 @@ int sony_code(int device, int subdevice, int function,
 		carrier(0, 600, &overtime, period, sample, buffer, &pos);
 	}
 
-	carrier(0, 14000 - pos / 2, &overtime, period, sample, buffer, &pos);
+	carrier(0, 45000 - sample * pos / multiplier / 2,
+		&overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
@@ -496,7 +499,8 @@ int rc5_code(int device, int subdevice, int function,
 			period, sample, buffer, &pos);
 	}
 
-	carrier(0, 114000 - pos / 2, &overtime, period, sample, buffer, &pos);
+	carrier(0, 114000 - sample * pos / multiplier / 2,
+		&overtime, period, sample, buffer, &pos);
 
 	return pos / 2;
 }
