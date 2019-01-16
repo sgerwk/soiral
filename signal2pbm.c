@@ -124,7 +124,6 @@ int main(int argc, char *argv[]) {
 	int expansion = 1, timeslot = 1, significant = 0, nosignalheight = 6;
 	int jump = 0, displayaverage = 0, zero = 0;
 	int convert = 0, view = 0;
-	char *vargv[4];
 
 	size_t pos;
 	int res;
@@ -402,11 +401,10 @@ int main(int argc, char *argv[]) {
 	if (view || convert)
 		system("pnmtopng output.pbm > output.png");
 	if (view) {
-		vargv[0] = "fbi";
-		vargv[1] = "--fitwidth";
-		vargv[2] = "output.png";
-		vargv[3] = NULL;
-		execvp("fbi", vargv);
+		if (getenv("DISPLAY"))
+			system("feh output.png &");
+		else
+			system("fbi --fitwidth output.png < /dev/tty");
 	}
 
 	return EXIT_SUCCESS;
