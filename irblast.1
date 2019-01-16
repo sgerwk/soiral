@@ -157,6 +157,11 @@ mark the end of each code and the end of the initial silence with a short
 negative pulse; this is only useful for testing with a loopback device in
 conjunction with \fI-n 8000\fP, to check that everything is sent correctly
 .TP
+.B -a
+print an ascii representation of the output signal; every character represent
+about twenty samples, so the length of the printing depends on the sampling
+rate
+.TP
 .B protocol
 currently supported are: nec, nec2, sharp, sony20 and rc5
 .TP

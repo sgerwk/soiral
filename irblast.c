@@ -51,6 +51,7 @@ int timebalancing = 1, valuetimebalancing = 0;
 int markend = 0;
 int multiplier = 100; // time granularity: 10 means 1/10 microsecond
 int startup = 0;
+int textout = 0;
 
 /*
  * timing statistics
@@ -188,10 +189,11 @@ void carrier(int value, int duration, int *overtime,
 	if (dutycycle != 100 && boundary > period - sample)
 		boundary = period - sample;
 
-
 	for (t = 0;
 	     t < startup * multiplier && value && t < target - *overtime;
 	     t += sample) {
+		if (textout && t % (20 * sample) == 0)
+			printf("*");
 		buffer[(*pos)++] = left_even;
 		buffer[(*pos)++] = right_even;
 	}
@@ -200,6 +202,9 @@ void carrier(int value, int duration, int *overtime,
 	     t < target - *overtime ||
 		(ensurelength && value && t % period < boundary);
 	     t += sample) {
+		if (textout && t % (20 * sample) == 0)
+			printf("%s", value ? "*" : "_");
+
 		// left channel
 		buffer[(*pos)++] =
 			value == 0 ?
@@ -697,10 +702,12 @@ int sendcode(snd_pcm_t *handle,
 	case protocol_none:
 		return -1;
 	}
+	if (textout)
+		printf("\n");
+	printf("audio frames: %d\t", len);
 	printf("%d <= overtime <= %d\n", minovertime, maxovertime);
 	if (len <= 0)
 		return len;
-	printf("audio frames: %d\n", len);
 
 	res = snd_pcm_writei(handle, buffer, len + markend);
 	if (res < 0) {
@@ -722,7 +729,7 @@ void usage() {
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
 	printf(" [-t factor] [-o factor]\n");
-	printf("\t        [-v] [-b] [-i] [-l] [-w] [-e]\n");
+	printf("\t        [-v] [-b] [-i] [-l] [-w] [-e] [-a]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -731,6 +738,7 @@ void usage() {
 	printf("\t\t-n value\tcarrier off value\n");
 	printf("\t\t-s duration\tinitial silence time\n");
 	printf("\t\t-c percentage\tduty cycle\n");
+	printf("\t\t-g startup\tfirst pulse length\n");
 	printf("\t\t-t factor\ttime scaling\n");
 	printf("\t\t-o factor\tcarrier-on time scaling\n");
 	printf("\t\t-v\t\tcompensate carrier-on time scaling\n");
@@ -739,6 +747,7 @@ void usage() {
 	printf("\t\t-i\t\tinverted adapter\n");
 	printf("\t\t-w\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
+	printf("\t\t-a\t\tprint an ascii representation of the signal\n");
 	printf("\t\tprotocol\tnec, nec2, rc5, sharp, sony20, test\n");
 	printf("\t\tdevice\t\taddress of device, e.g., $((0x12))\n");
 	printf("\t\tsubdevice\tsecond part of address, or \"none\"\n");
@@ -765,7 +774,7 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:g:t:o:vbliweh")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:g:t:o:vbliweah")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -815,6 +824,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'e':
 			markend = 20;
+			break;
+		case 'a':
+			textout = 1;
 			break;
 		case 'h':
 			usage();
