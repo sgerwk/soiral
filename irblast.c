@@ -943,9 +943,17 @@ int main(int argc, char *argv[]) {
 				/* print parameters */
 
 	printf("sample rate: %d samples per second\n", rate);
-	printf("sample duration: %d microseconds\n", sample / multiplier);
+	printf("sample duration: %d.%d microseconds\n",
+		sample / multiplier, sample % multiplier);
 	printf("carrier frequency: %d Hertz\n", 1000000 * multiplier / period);
-	printf("carrier period: %d microseconds\n", period / multiplier);
+	printf("carrier period: %d.%d microseconds\n",
+		period / multiplier, period % multiplier);
+	printf("timescales: all %g, ", timefactor);
+	printf("carrier-on %g, ", ontimefactor);
+	printf("carrier-off %g\n", offtimefactor);
+	printf("startup interval: %d microseconds\n", startup);
+	printf("duty cycle: %d%%\n", dutycycle);
+	printf("inverted: %s\n", inverted ? "yes" : "no");
 
 				/* wait, if -l is passed */
 
