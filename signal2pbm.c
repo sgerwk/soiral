@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
 	int expansion = 1, timeslot = 1, significant = 0, nosignalheight = 6;
 	int jump = 0, displayaverage = 0, zero = 0;
 	int convert = 0, view = 0;
+	unsigned int i;
 
 	size_t pos;
 	int res;
@@ -213,7 +214,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (! ascii) {
-		fread(header, 4, 6, in);
+		fread(header, sizeof(uint32_t), 6, in);
 		fprintf(stderr, "magic:    %08X\n", be32toh(header[0]));
 		fprintf(stderr, "offset:   %d\n",   be32toh(header[1]));
 		fprintf(stderr, "size:     %d\n",   be32toh(header[2]));
@@ -238,7 +239,9 @@ int main(int argc, char *argv[]) {
 		if (nch != 1)
 			printf("using channel %d of %d\n", ch, nch);
 
-		fseek(in, be32toh(header[1]), SEEK_SET);
+		for (i = sizeof(uint32_t) * 6; i < be32toh(header[1]); i++)
+			fread(&c, 1, 1, in);
+
 	}
 
 					/* output file */
