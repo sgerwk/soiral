@@ -15,6 +15,7 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-d audiodevice\fP]
 [\fI-r rate\fP]
 [\fI-f frequency\fP]
+[\fI-u divisor\fP]
 [\fI-n value\fP]
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
@@ -72,10 +73,16 @@ rate
 the carrier frequency in Hertz; the default depends on the protocol (for
 example, 38000Hz for the NEC protocol); if the frequency is too high for the
 sample rate, it is divided by 3, or by 5, or by 7, etc.; see \fIIMPLEMENTATION
-AND LIMITATIONS\fP below for the reason why; the frequency is further
-approximated to make its period an integer number of microseconds; a frequency
-of 0Hz makes the signal unoscillated (remains on for the required duration of
-the carrier): this may require option \fI-i\fP: see \fIHARDWARE\fP, below
+AND LIMITATIONS\fP below for the reason why; a frequency of 0Hz makes the
+signal unoscillated (remains on for the required duration of the carrier): this
+may require option \fI-i\fP: see \fIHARDWARE\fP, below
+.TP
+.BI -u " divisor
+divide the frequency dictated by the protocol by this amount; if the resulting
+frequency is too high for the sample rate, use the largest possible frequency
+allowed by the sample rate; amounts that make sense for the divisor are 3, 5,
+7, etc.; the default 0 means to use the method described for option \fI-f\fP to
+determine the divisor; see \fIIMPLEMENTATION AND LIMITATIONS\fP, below
 .TP
 .BI -n " value
 carrier off value; the carrier is realized by oscillating left and right output

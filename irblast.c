@@ -769,12 +769,12 @@ int main(int argc, char *argv[]) {
 	int device, subdevice, nosubdevice, function;
 	int times = 1, rtimes = 0;
 	int16_t temp;
-	unsigned int frequency, divisor, rate, period, sample;
+	unsigned int frequency, divisor = 0, rate, period, sample;
 	int i, res;
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:n:s:c:g:t:o:vbliweah")))
+	while (-1 != (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vbliweah")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -784,6 +784,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'f':
 			optfrequency = atoi(optarg);
+			break;
+		case 'u':
+			divisor = atoi(optarg);
 			break;
 		case 'n':
 			hold = atoi(optarg);
@@ -933,10 +936,11 @@ int main(int argc, char *argv[]) {
 
 	// if the frequency is close enough to rate/2, aim at that
 	// otherwise, use the frequency properties of square waves
-	for (divisor = 1;
-	     frequency / divisor * 2 > rate * 1.2;
-	     divisor += 2) {
-	}
+	if (divisor == 0)
+		for (divisor = 1;
+		     frequency / divisor * 2 > rate * 1.2;
+		     divisor += 2) {
+		}
 	printf("divisor: %d\n", divisor);
 	frequency /= divisor;
 	if (frequency * 2 > rate)
