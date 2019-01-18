@@ -27,6 +27,7 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-l\fP]
 [\fI-i\fP]
 [\fI-z\fP]
+[\fI-y percentage\fP]
 [\fI-w\fP]
 [\fI-e\fP]
 \fIprotocol device subdevice function\fP
@@ -159,6 +160,9 @@ see \fIHARDWARE\fP, below, on whether to use this option or not
 attenuate the signal in carrier-off intervals; normally, the output is its
 maximal negative value there; this option halven it; the result is a slight
 increase in overall output power
+.TP
+.BI -y " percentage
+reduce the value of the pulses following the first one in a burst
 .TP
 .B -w
 set the audio card parameters immediately, but then wait three seconds before

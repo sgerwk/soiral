@@ -51,6 +51,7 @@ int timebalancing = 1, valuetimebalancing = 0;
 int markend = 0;
 int multiplier = 100; // time granularity: 10 means 1/10 microsecond
 int startup = 0;
+int followers = 100;
 int textout = 0;
 
 /*
@@ -177,7 +178,7 @@ snd_pcm_t *audio(char *name, unsigned int *rate) {
 void carrier(int value, int duration, int *overtime,
 		int period, int sample,
 		int16_t *buffer, int *pos) {
-	int t, equaltarget, target, boundary, start, o;
+	int t, equaltarget, target, boundary, start, o, width = 100;
 
 	start = *overtime;
 	equaltarget = multiplier * duration * timefactor - sample / 2;
@@ -209,13 +210,20 @@ void carrier(int value, int duration, int *overtime,
 		buffer[(*pos)++] =
 			value == 0 ?
 				hold :
-				t % period < boundary ? left_even : left_odd;
+				t % period < boundary ?
+					left_even * width / 100 :
+					left_odd;
 
 		// right channel
 		buffer[(*pos)++] =
 			value == 0 ?
 				hold :
-				t % period < boundary ? right_even : right_odd;
+				t % period < boundary ?
+					right_even :
+					right_odd;
+
+		if (t % period >= boundary)
+			width = followers;
 
 		// check overflow
 		if (*pos >= MAXLEN - 10) {
@@ -729,7 +737,8 @@ void usage() {
 	printf("\tirblast [-d audiodevice] [-r rate] [-f frequency]\n");
 	printf("\t        [-n value] [-s duration] [-c dutycycle]");
 	printf(" [-t factor] [-o factor]\n");
-	printf("\t        [-v] [-b] [-i] [-l] [-w] [-e] [-a]\n");
+	printf("\t        [-v] [-b] [-i] [-z] [-y followers]");
+	printf(" [-l] [-w] [-e] [-a]\n");
 	printf("\t        protocol device subdevice function");
 	printf(" [times [repetitions]]\n");
 	printf("\t\t-d audiodevice\taudio device (e.g., hw:1)\n");
@@ -745,6 +754,8 @@ void usage() {
 	printf("\t\t-b\t\tdisable time quantization error balancing\n");
 	printf("\t\t-l\t\tensure carrier-on interval length\n");
 	printf("\t\t-i\t\tinverted adapter\n");
+	printf("\t\t-z\t\tattenuate inverse signal\n");
+	printf("\t\t-y percentage\treduction of following pulses\n");
 	printf("\t\t-w\t\tstart with a 3-seconds pause (for loopback)\n");
 	printf("\t\t-e\t\tmark the end of the code (for testing)\n");
 	printf("\t\t-a\t\tprint an ascii representation of the signal\n");
@@ -775,7 +786,7 @@ int main(int argc, char *argv[]) {
 				/* arguments */
 
 	while (-1 !=
-	       (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vblizweah")))
+	       (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vblizy:weah")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -825,6 +836,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'z':
 			reduced = 1;
+			break;
+		case 'y':
+			followers = atoi(optarg);
 			break;
 		case 'w':
 			delay = 3;
