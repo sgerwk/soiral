@@ -103,6 +103,7 @@ void usage() {
 	printf("\t\t-s threshold\tless than this is like zero\n");
 	printf("\t\t-n height\theight for a line without signal\n");
 	printf("\t\t-d samples\tdiscard samples at the beginning of input\n");
+	printf("\t\t-b\t\tdiscard samples until the first significant one\n");
 	printf("\t\t-j\t\tdo not connect jumps in the signal line\n");
 	printf("\t\t-a\t\talso show average of signal in the timeslot\n");
 	printf("\t\t-0\t\tdraw the level of 0 signal\n");
@@ -125,7 +126,7 @@ int main(int argc, char *argv[]) {
 	int expansion = 1, timeslot = 1, significant = 0, nosignalheight = 6;
 	int jump = 0, displayaverage = 0, zero = 0;
 	int convert = 0, view = 0;
-	unsigned int i, discard = 0;
+	unsigned int i, discard = 0, first = 0;
 
 	size_t pos;
 	int res;
@@ -140,7 +141,7 @@ int main(int argc, char *argv[]) {
 
 					/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:d:fc:ja0pvh")))
+	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:d:bfc:ja0pvh")))
 		switch (opt) {
 		case 'w':
 			INTOPT(width, 1, "width");
@@ -165,6 +166,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'd':
 			INTOPT(discard, 1, "discard");
+			break;
+		case 'b':
+			first = 1;
 			break;
 		case 'j':
 			jump = 1;
@@ -273,6 +277,11 @@ int main(int argc, char *argv[]) {
 
 	for (i = 0; i < discard; i++)
 		input(in, ch, nch, ascii, &val);
+
+	if (first)
+		do {
+			input(in, ch, nch, ascii, &val);
+		} while(HEIGHT(val) == 0);
 
 					/* loop over output lines */
 
