@@ -26,6 +26,7 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-b\fP]
 [\fI-l\fP]
 [\fI-i\fP]
+[\fI-z\fP]
 [\fI-w\fP]
 [\fI-e\fP]
 \fIprotocol device subdevice function\fP
@@ -153,6 +154,11 @@ the carrier is on again for at least a sample; this option may require option
 invert left and right output; this is only relevant when using a duty cycle
 other than the default 50%, a frequency of 0 or the carrier-on ensured length;
 see \fIHARDWARE\fP, below, on whether to use this option or not
+.TP
+.B -z
+attenuate the signal in carrier-off intervals; normally, the output is its
+maximal negative value there; this option halven it; the result is a slight
+increase in overall output power
 .TP
 .B -w
 set the audio card parameters immediately, but then wait three seconds before

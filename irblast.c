@@ -761,7 +761,7 @@ void usage() {
  */
 int main(int argc, char *argv[]) {
 	int opt;
-	int delay = 0, inverted = 0;
+	int delay = 0, inverted = 0, reduced = 0;
 	int optrate = -1, optfrequency = -1, silence = 80000;
 	char *outdevice = "hw:0";
 	snd_pcm_t *handle;
@@ -774,7 +774,8 @@ int main(int argc, char *argv[]) {
 
 				/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vbliweah")))
+	while (-1 !=
+	       (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vblizweah")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -821,6 +822,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'i':
 			inverted = 1;
+			break;
+		case 'z':
+			reduced = 1;
 			break;
 		case 'w':
 			delay = 3;
@@ -954,6 +958,11 @@ int main(int argc, char *argv[]) {
 		temp = left_odd;
 		left_odd = right_odd;
 		right_odd = temp;
+	}
+
+	if (reduced) {
+		left_odd /= 2;
+		right_odd /= 2;
 	}
 
 				/* print parameters */
