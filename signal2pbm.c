@@ -345,16 +345,17 @@ int main(int argc, char *argv[]) {
 					/* no significant signal */
 
 		if (! hassignal) {
-			for (ys = 0; ys < nosignalheight; ys++)
+			for (ys = 0; ys < nosignalheight; ys++) {
 				for (x = 0; x < width; x++) {
 					fprintf(out, ys == nosignalheight / 2 ?
 						     	"1" : "0"); 
 					newline(out, &l);
 				}
+				y++;
+			}
 			firstmin = 0;
 			firstmax = 0;
 			firstavg = 0;
-			y += nosignalheight;
 			continue;
 		}
 
@@ -395,12 +396,12 @@ int main(int argc, char *argv[]) {
 				prevmax = emax;
 				prevavg = eavg;
 			}
+			y++;
 		}
 
 		firstmin = prevmin;
 		firstmax = prevmax;
 		firstavg = prevavg;
-		y += interline * 2;
 	}
 
 					/* go back and write size of image */
