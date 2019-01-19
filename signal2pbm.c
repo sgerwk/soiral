@@ -126,10 +126,11 @@ int main(int argc, char *argv[]) {
 	int expansion = 1, timeslot = 1, significant = 0, nosignalheight = 6;
 	int jump = 0, displayaverage = 0, zero = 0;
 	int convert = 0, view = 0;
+	int nsamples = -1;
 	unsigned int i, discard = 0, first = 0;
 
 	size_t pos;
-	int res;
+	int res, sample;
 	int val;
 	int *value, *minimal, *maximal, *average;
 	int emax, emin, eavg;
@@ -141,7 +142,7 @@ int main(int argc, char *argv[]) {
 
 					/* arguments */
 
-	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:d:bfc:ja0pvh")))
+	while (-1 != (opt = getopt(argc, argv, "w:t:m:i:e:s:n:d:bx:fc:ja0pvh")))
 		switch (opt) {
 		case 'w':
 			INTOPT(width, 1, "width");
@@ -169,6 +170,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'b':
 			first = 1;
+			break;
+		case 'x':
+			INTOPT(nsamples, 0, "number of samples");
 			break;
 		case 'j':
 			jump = 1;
@@ -291,19 +295,22 @@ int main(int argc, char *argv[]) {
 	firstmin = 0;
 	firstmax = 0;
 	firstavg = 0;
+	sample = 0;
 	for (r = width; r == width; ) {
 
 					/* read and analyze signal */
 
 		hassignal = 0;
 		t = 0;
-		for (r = 0; r < width; r++) {
+		for (r = 0; r < width && res != EOF; r++) {
 			minimal[r] = INT16_MAX;
 			maximal[r] = -INT16_MAX;
 			average[r] = 0;
 			if (timeslot <= 0) {
 				if (t == 0)
 					res = input(in, ch, nch, ascii, &val);
+				if (nsamples > 0 && ++sample > nsamples)
+					res = EOF;
 				value[r] = val;
 				minimal[r] = val;
 				maximal[r] = val;
@@ -314,6 +321,8 @@ int main(int argc, char *argv[]) {
 				for (t = 0; t < timeslot; t++) {
 					res = input(in, ch, nch, ascii,
 						&(value[r]));
+					if (nsamples > 0 && ++sample > nsamples)
+						res = EOF;
 					if (res == -1)
 						continue;
 					if (res == EOF)
@@ -328,15 +337,13 @@ int main(int argc, char *argv[]) {
 					break;
 				average[r] /= t;
 			}
-			if (res == EOF)
-				break;
 
 			/* nothing to be seen anyway */
 			if (HEIGHT(minimal[r]) == 0 && HEIGHT(maximal[r]) == 0)
 				continue;
 
 			/* value too low to be significant */
-			if (value[r] < significant && value[r] > -significant)
+			if (-significant < value[r] && value[r] < significant)
 				continue;
 
 			hassignal = 1;
