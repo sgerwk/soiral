@@ -757,6 +757,7 @@ int main(int argc, char *argv[]) {
 	layoutprint(layout, showcodes, showall);
 	if (save)
 		layoutwrite(layoutfd, layout);
+	fclose(layoutfd);
 	layoutfree(layout);
 
 //	pthread_kill(input, SIGTERM);
