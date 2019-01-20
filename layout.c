@@ -22,6 +22,12 @@
  *
  * see layout.1 for details
  *
+ * testing:
+ *	# set up hw:1 to be a loopback device
+ *	serial2sound - | AUDIODEV=hw:1,1 play - -r 44100
+ *	layout file.txt hw:1,0
+ *	serial -d ttySS0
+ *
  * todo:
  * - if no keys have codes, do not print codes
  * - if keys have different addresses/protocols, print them as well
