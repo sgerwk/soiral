@@ -27,11 +27,11 @@
  *
  * test:
  *	serial2sound - | sox - -r 44100 -b 16 -t au - | remote -
- *	serial ttySS0
+ *	serial -d ttySS0
  *
  * to visualize the actual waveform:
  *	serial2sound &
- *	serial ttySS0
+ *	serial -d ttySS0
  *	sox output.au -r 44100 resampled.au
  *	signal2pbm -t 4 -e 2 -i 20 -p resampled.au ; fbi output.png
  *	remote resampled.au
