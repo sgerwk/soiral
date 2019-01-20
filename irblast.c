@@ -772,7 +772,8 @@ void usage() {
  */
 int main(int argc, char *argv[]) {
 	int opt;
-	int delay = 0, inverted = 0, reduced = 0;
+	int delay = 0, inverted = 0;
+	double reduced = -1000;
 	int optrate = -1, optfrequency = -1, silence = 80000;
 	char *outdevice = "hw:0";
 	snd_pcm_t *handle;
@@ -835,7 +836,7 @@ int main(int argc, char *argv[]) {
 			inverted = 1;
 			break;
 		case 'z':
-			reduced = 1;
+			reduced = -0.5;
 			break;
 		case 'y':
 			followers = atoi(optarg);
@@ -974,9 +975,9 @@ int main(int argc, char *argv[]) {
 		right_odd = temp;
 	}
 
-	if (reduced) {
-		left_odd /= 2;
-		right_odd /= 2;
+	if (reduced > -1000) {
+		left_odd = left_even * reduced;
+		right_odd = right_even * reduced;
 	}
 
 				/* print parameters */
@@ -992,6 +993,7 @@ int main(int argc, char *argv[]) {
 	printf("carrier-off %g\n", offtimefactor);
 	printf("startup interval: %d microseconds\n", startup);
 	printf("duty cycle: %d%%\n", dutycycle);
+	printf("reduced inversion: %g\n", reduced == -1000 ? -1 : reduced);
 	printf("inverted: %s\n", inverted ? "yes" : "no");
 
 				/* wait, if -l is passed */
