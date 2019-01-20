@@ -36,8 +36,13 @@
  *	signal2pbm -t 4 -e 2 -i 20 -p resampled.au ; fbi output.png
  *	remote resampled.au
  *
+ * to convert to sound device via loopback:
+ *	serial2sound - | AUDIODEV=hw:1,1 play - -r 44100
+ *	remote hw:1,0
+ *	serial -d ttySS0
+ *
  * todo:
- * - optionally write output to a sound device (aloop) instead of stdout
+ * - directly write output to a sound device (aloop) instead of stdout
  * - make a distinction between reading from a pipe (which this program creates
  *   if it does not exist) and a serial device like /dev/ttyS0, /dev/ttyUSB0 or
  *   /dev/tnt1 (which must exist); maybe: create the pipe only if no argument
