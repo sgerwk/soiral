@@ -62,7 +62,8 @@
  * create an AU file
  */
 FILE *aucreate(char *filename, int baudrate) {
-	uint32_t header[6] = { 0x2E736E64, 24, 0XFFFFFFFF, 3, baudrate, 1 };
+	uint32_t header[6] = { 0x2E736E64, 32, 0xFFFFFFFF, 3, baudrate, 1 };
+	uint32_t filler[2] = { 0x0, 0x0 };
 	FILE *out;
 	int i;
 
@@ -78,6 +79,7 @@ FILE *aucreate(char *filename, int baudrate) {
 	for (i = 0; i < 6; i++)
 		header[i] = htobe32(header[i]);
 	fwrite(header, 4, 6, out);
+	fwrite(filler, 4, 2, out);
 
 	return out;
 }
