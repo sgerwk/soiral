@@ -787,7 +787,7 @@ int main(int argc, char *argv[]) {
 				/* arguments */
 
 	while (-1 !=
-	       (opt = getopt(argc, argv, "d:r:f:u:n:s:c:g:t:o:vblizy:weah")))
+	       (opt = getopt(argc, argv, "d:r:f:u:kn:s:c:g:t:o:vblizy:weah")))
 		switch (opt) {
 		case 'd':
 			outdevice = optarg;
@@ -800,6 +800,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'u':
 			divisor = atoi(optarg);
+			break;
+		case 'k':
+			optfrequency = -2;
 			break;
 		case 'n':
 			hold = atoi(optarg);
@@ -955,6 +958,8 @@ int main(int argc, char *argv[]) {
 
 	// if the frequency is close enough to rate/2, aim at that
 	// otherwise, use the frequency properties of square waves
+	if (optfrequency == -2 && frequency * 2 > rate * 1.2)
+		frequency = rate / 2;
 	if (divisor == 0)
 		for (divisor = 1;
 		     frequency / divisor * 2 > rate * 1.2;
@@ -964,7 +969,7 @@ int main(int argc, char *argv[]) {
 	frequency /= divisor;
 	if (frequency * 2 > rate)
 		frequency = rate / 2;
-	period = 1000000 * multiplier / frequency;
+	period = (1000000 - multiplier / 2) * multiplier / frequency;
 
 	if (inverted) {
 		temp = left_even;

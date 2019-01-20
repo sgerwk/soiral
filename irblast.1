@@ -16,6 +16,7 @@ irblast \- emit remote infrared codes via an audio device
 [\fI-r rate\fP]
 [\fI-f frequency\fP]
 [\fI-u divisor\fP]
+[\fI-k\fP]
 [\fI-n value\fP]
 [\fI-s duration\fP]
 [\fI-c percentage\fP]
@@ -59,6 +60,8 @@ check whether the correct audio device is used with option \fI-d\fP
 try changing the duty cycle: \fI-c 99\fP or \fI-c 1\fP
 .IP "  * "
 try increasing output power with \fI-z\fP
+.IP "  * "
+try using the maximum allowed frequency: \fI-k\fP
 
 .
 .
@@ -87,6 +90,11 @@ frequency is too high for the sample rate, use the largest possible frequency
 allowed by the sample rate; amounts that make sense for the divisor are 3, 5,
 7, etc.; the default 0 means to use the method described for option \fI-f\fP to
 determine the divisor; see \fIIMPLEMENTATION AND LIMITATIONS\fP, below
+.TP
+.B -k
+if the sample rate does not suffice to generate the frequency required by the
+protocol, use the maximum frequency allowed by the sample rate; see
+\fIIMPLEMENTATION AND LIMITATIONS\fP, below
 .TP
 .BI -n " value
 carrier off value; the carrier is realized by oscillating left and right output
@@ -225,12 +233,12 @@ maximal negative value on the left channel and the second is the contrary.
 
 The only cases when the direction of the LED counts is when setting a duty
 cycle that is different than the default 50%, a frequency of 0Hz (which is the
-same as a duty cycle of 100%) or ensuring the length of the carrier-on periods.
-The direction can be established by \fIirblast test 2 none 0\fP. The infrared
-LED should flash twice. If it flashes once, the direction is inverted, and
-option \fI-i\fP is necessary to take this into account. To see the LED flashing
-a camera is necessary as the human eye does not see infrared light; a mobile or
-webcam suffices.
+same as a duty cycle of 100%), ensuring the length of the carrier-on periods or
+using a reduced inversion. The direction can be established by \fIirblast test
+2 none 0\fP. The infrared LED should flash twice. If it flashes once, the
+direction is inverted, and option \fI-i\fP is necessary to take this into
+account. To see the LED flashing a camera is necessary as the human eye does
+not see infrared light; a mobile or webcam suffices.
 
 If the LED does not flash at all, or only emits a very fleeble ligth, then
 something may be wrong with the mixer. The volume may not be the highest
@@ -275,6 +283,11 @@ frequency, no division is done. In the same way, if a third of the frequency is
 too large for the sample rate, the frequency is divided by five instead, since
 square waves also have a component at five times their frequency. If this is
 not enough, frequency is divided by seven, or nine, etc.
+
+Another solution is to emit a carrier at the maximum frequency supported by the
+audio device. Infrared receivers remove the frequencies different from their by
+an analog band-pass filter, but analog filters do not completely erase
+frequencies outside their band: part of the signal may still pass.
 
 .
 .
