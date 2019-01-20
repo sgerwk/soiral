@@ -131,12 +131,12 @@ int main(int argc, char *argv[]) {
 		}
 
 		while (1 == (res = read(in, &c, 1))) {
-			auwrite(out, INT16_MAX / 2);
+			auwrite(out, INT16_MAX / 2);	// start bit
 			for (i = 0; i < 8; i++)
 				auwrite(out, bit(c, i) ? 0 : INT16_MAX / 2);
-			auwrite(out, 0);
-			auwrite(out, 0);
-			auwrite(out, 0);
+			auwrite(out, 0);		// parity
+			auwrite(out, 0);		// 1st stop bit
+			auwrite(out, 0);		// 2nd stop bit
 		}
 
 		fflush(out);
