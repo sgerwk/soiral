@@ -666,7 +666,6 @@ int main(int argc, char *argv[]) {
 				skipknown = 0;
 				direction = command == 'n' ? 1 : -1;
 				movekey(&pos, layout, direction, skipknown);
-				free(lastkey);
 				lastkey = NULL;
 				break;
 			case 'w':
