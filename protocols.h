@@ -123,14 +123,14 @@ enum protocols {
 	sony20,
 	rc5,
 };
-struct protocol nec_protocol;
-struct protocol necrepeat_protocol;
-struct protocol nec2_protocol;
-struct protocol nec2repeat_protocol;
-struct protocol sharp_protocol;
-struct protocol sony12_protocol;
-struct protocol sony20_protocol;
-struct protocol rc5_protocol;
+extern struct protocol nec_protocol;
+extern struct protocol necrepeat_protocol;
+extern struct protocol nec2_protocol;
+extern struct protocol nec2repeat_protocol;
+extern struct protocol sharp_protocol;
+extern struct protocol sony12_protocol;
+extern struct protocol sony20_protocol;
+extern struct protocol rc5_protocol;
 
 /*
  * print the encoding for each protocol
