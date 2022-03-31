@@ -26,7 +26,9 @@ The following programs use this adapter:
 
 - **remote** decodes the signals received from a remote control
 
-- **layout** stores all codes a remote control emits in a text file
+- **layout** stores all codes a remote control emits in a text file;  
+  **layouttoirdb** converts it into the
+  [irdb](https://github.com/probonopd/irdb) format
 
 - **signal2pbm** visualizes the raw infrared signals
 

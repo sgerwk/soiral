@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# convert a layout file into the irdb format
+# https://github.com/probonopd/irdb
+
+[ $# -lt 1 ] && echo "layout file name missing" && exit 1
+[ ! -f "$1" ] && echo "layout file $1 not found" && exit 1
+
+sed 's,  *,\n,g' "$1" | \
+grep -v '^$' | \
+tr '|' ',' | \
+sed 's/-0x/,0x/' | \
+tr '[a-z]' '[A-Z]' | \
+awk -F, '{
+	key = $1
+	protocol = $2
+	device = strtonum($3)
+	if (NF == 4) {
+		subdevice = 255 - device
+		code = strtonum($4)
+	}
+	else {
+		subdevice = strtonum($4)
+		code = strtonum($5)
+	}
+	printf("%s,%s,%d,%d,%d\n", key, protocol, device, subdevice, code)
+}' | \
+sort -t, -k5,5 -n
+
